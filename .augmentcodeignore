@@ -1,0 +1,45 @@
+# Pastas específicas solicitadas
+_external_refs/
+_discard_later/
+_do_not_index/
+agv_method/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos de controle de versão
+.git/
+
+# Diretórios de dependências
+node_modules/
+jspm_packages/
+bower_components/
+
+# Diretórios de build
+build/
+dist/
+out/
+
+# Arquivos de log
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+*~
+*.bak
+
+# Arquivos binários
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+
+# Arquivos de IDE e editores
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace

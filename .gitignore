@@ -1,0 +1,79 @@
+# Pastas específicas solicitadas
+_external_refs/
+_discard_later/
+_do_not_index/
+agv_method/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Arquivos de log
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Diretórios de dependências
+node_modules/
+jspm_packages/
+bower_components/
+
+# Diretórios de build
+build/
+dist/
+out/
+.next/
+
+# Arquivos de cache
+.npm
+.eslintcache
+.stylelintcache
+.cache/
+.parcel-cache/
+
+# Arquivos de IDE e editores
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Arquivos de compilação
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Arquivos de pacote
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Arquivos temporários
+*.tmp
+*.temp
+*~
