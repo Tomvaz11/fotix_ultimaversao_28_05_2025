@@ -1,5 +1,3 @@
-# AGV Prompt Template: Tocle v1.0 - Implementação de Código Novo
-
 **Tarefa Principal:** Implementar a funcionalidade/módulo descrito na seção "Especificação" abaixo, criando ou modificando o arquivo Python `fotix/src/fotix/core/duplicate_finder.py`. Siga rigorosamente as diretrizes e o contexto arquitetural fornecido.
 
 **Contexto Arquitetural (Definido por Tocrisna / Fase Anterior):**
