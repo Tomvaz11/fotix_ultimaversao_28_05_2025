@@ -1,5 +1,7 @@
 **Tarefa Principal:** Implementar a funcionalidade/módulo descrito na seção "Especificação" abaixo, criando ou modificando o arquivo Python `fotix/src/fotix/core/duplicate_finder.py`. Siga rigorosamente as diretrizes e o contexto arquitetural fornecido.
 
+**Arquivos de Contexto (Em anexo):** `Output_Tocrisna_Architecture_v1.0.md` e `Severino_Core-Duplicate_Finder.md`.
+
 **Contexto Arquitetural (Definido por Tocrisna / Fase Anterior):**
 
 *   **Nome do Projeto:** `Fotix`
