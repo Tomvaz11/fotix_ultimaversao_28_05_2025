@@ -10,6 +10,7 @@ fotix/src/fotix.egg-info/SOURCES.txt
 fotix/src/fotix.egg-info/dependency_links.txt
 fotix/src/fotix.egg-info/top_level.txt
 fotix/src/fotix/core/__init__.py
+fotix/src/fotix/core/decision_logic.py
 fotix/src/fotix/core/duplicate_finder.py
 fotix/src/fotix/domain/__init__.py
 fotix/src/fotix/domain/models.py
