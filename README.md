@@ -16,4 +16,4 @@ Para começar a trabalhar neste projeto:
 
 ## Contato
 
-Adicione aqui informações de contato se necessário.
+Adicione aqui informações de contato se necessário
