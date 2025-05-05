@@ -4,7 +4,7 @@
 
 **Contexto Essencial (Fornecido pelo Coordenador):**
 
-1.  **Funcionalidade/Componente Alvo:** `[Item X da Ordem: Nome Completo do Módulo. Ex: "Item 3: fotix.core.models"]` (**ÚNICO CAMPO A SER PREENCHIDO PELO COORDENADOR NESTA SEÇÃO**)
+1.  **Funcionalidade/Componente Alvo:** `Item 1: fotix.utils`
 2.  **Blueprint Arquitetural:** `@Output_BluePrint_Arquitetural_Tocrisna_v3.md`
 3.  **Ordem e Descrições Iniciais:** `@Output_Ordem_Para_Implementacao_Geral.md`
 4.  **Contexto Adicional do Workspace:** *Fique a vontade para consultar nossa codebase.*
