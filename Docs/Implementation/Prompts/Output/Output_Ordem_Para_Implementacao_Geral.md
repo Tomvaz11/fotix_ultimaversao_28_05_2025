@@ -1,74 +1,74 @@
-## Análise do Blueprint Arquitetural (Fotix v1.0)
+## Análise de Implementação e Próximos Passos para Fotix
 
-### Módulos Base (Fundamentais e Utilitários)
+**Instruções para o Coordenador:**
 
-Estes módulos contêm definições essenciais, configurações ou utilidades transversais, geralmente implementados primeiro ou conforme necessário pelas camadas principais.
+Este documento organiza os módulos do projeto Fotix para guiar a implementação. Ele separa os "Módulos Base" (definições, utilitários, configurações e estruturas de dados) dos "Módulos Principais" (que contêm a lógica central e as implementações concretas dos serviços).
 
-1.  **`fotix.utils`**
-    *   **Responsabilidade Principal (Blueprint):** Funções auxiliares, constantes e utilitários genéricos usados em múltiplas camadas.
-2.  **`fotix.config`**
-    *   **Responsabilidade Principal (Blueprint):** Carregar e fornecer acesso a configurações da aplicação (ex: caminho do backup, níveis de log).
-3.  **`fotix.core.models`**
-    *   **Responsabilidade Principal (Blueprint):** Define as estruturas de dados (`FileInfo`, `DuplicateSet`, etc.) usando `dataclasses` ou `Pydantic`. Representa os dados centrais da aplicação.
-4.  **`fotix.infrastructure.interfaces`**
-    *   **Responsabilidade Principal (Blueprint):** Define as interfaces (contratos) para os serviços da camada de infraestrutura (ex: `IFileSystemService`, `IConcurrencyService`, `IBackupService`, `IZipHandlerService`). Garante o desacoplamento.
-5.  **`fotix.core.interfaces`**
-    *   **Responsabilidade Principal (Blueprint):** Define as interfaces expostas pela camada Core para serem usadas pela camada de Aplicação (ex: `IDuplicateFinderService`, `ISelectionStrategy`).
+*   **NÃO implemente os "Módulos Base" listados abaixo diretamente agora.** Suas pastas e arquivos básicos (como `__init__.py`, `interfaces.py`, `models.py`) serão criados quando necessário pela IA durante a implementação dos módulos principais que dependem deles. O conteúdo específico de `fotix.utils` será adicionado organicamente conforme a necessidade surgir nos módulos principais. A estrutura inicial de `fotix.config` pode ser simples e expandida depois.
+*   **SIGA a "Ordem de Implementação Sugerida (Módulos Principais)" abaixo.** Comece pelo **Item #1** e prossiga sequencialmente.
+*   Para **CADA item** da ordem numerada, use o `Prompt_ImplementadorMestre_vX.Y` (use a versão mais atual), preenchendo apenas o nome do módulo alvo (ex: "Item 1: fotix.infrastructure.logging_config"). Anexe sempre o `@Blueprint_Arquitetural.md`, este arquivo (`@Ordem_Com_Descricoes.md`) e o código relevante já existente como contexto. A "Descrição de Alto Nível Inicial" listada abaixo para cada item servirá como ponto de partida para a IA.
+
+---
+
+### Módulos Base (Estrutura Inicial / Conteúdo On-Demand)
+
+Estes módulos contêm definições, estruturas ou utilitários que são pré-requisitos ou suportam os módulos principais. Sua estrutura básica será criada conforme necessário.
+
+*   **`fotix.config`:** Responsável por carregar e fornecer acesso a configurações da aplicação (ex: caminho do backup, níveis de log).
+*   **`fotix.utils`:** Contém funções auxiliares, constantes e utilitários genéricos usados em múltiplas camadas. O conteúdo será adicionado conforme necessário.
+*   **`fotix.infrastructure.interfaces`:** Define as interfaces (contratos) para os serviços da camada de infraestrutura (ex: `IFileSystemService`, `IConcurrencyService`, `IBackupService`, `IZipHandlerService`). A IA criará este arquivo e definirá as interfaces conforme os módulos de implementação (`fotix.infrastructure.*`) são criados.
+*   **`fotix.core.models`:** Define as estruturas de dados centrais (ex: `FileInfo`, `DuplicateSet`) usando `dataclasses` ou `Pydantic`. A IA criará este arquivo e definirá os modelos conforme necessário, principalmente ao implementar `fotix.core.duplicate_finder`.
+*   **`fotix.core.interfaces`:** Define as interfaces (contratos) para os serviços da camada de domínio que são expostos para a camada de aplicação (ex: `IDuplicateFinderService`, `ISelectionStrategy`). A IA criará este arquivo e definirá as interfaces conforme os módulos de implementação (`fotix.core.*`) são criados.
+*   **`fotix.application.interfaces`:** Define as interfaces (contratos) expostas pela camada de Aplicação para a camada de UI (se houver necessidade explícita de interfaces entre Aplicação e UI). A IA criará este arquivo se/quando a implementação da UI o exigir.
 
 ---
 
 ### Ordem de Implementação Sugerida (Módulos Principais)
 
-Esta ordem foca nos módulos que contêm a lógica de implementação principal, seguindo as dependências identificadas no blueprint.
-
 1.  **`fotix.infrastructure.logging_config`**
-    *   **Descrição de Alto Nível Inicial:** Configura o sistema de logging para a aplicação Fotix. Define como as mensagens de log serão formatadas, para onde serão enviadas (console, arquivo) e o nível de detalhe inicial.
-    *   *Justificativa da Ordem:* É uma configuração fundamental e independente, útil desde o início do desenvolvimento para rastrear o comportamento dos outros módulos. Depende apenas de bibliotecas externas e `fotix.config`.
+    *   **Descrição de Alto Nível Inicial:** Configurar o sistema de logging padrão do Python para a aplicação Fotix. Definir formatos de log, níveis e possíveis handlers (console, arquivo) com base nas configurações carregadas de `fotix.config`.
+    *   *Justificativa da Ordem:* O logging é fundamental e deve estar disponível desde o início para auxiliar no desenvolvimento e depuração dos módulos subsequentes. É relativamente independente de outras lógicas.
 
-2.  **`fotix.core.selection_strategy`**
-    *   **Descrição de Alto Nível Inicial:** Implementa a lógica de negócio central para escolher qual arquivo manter dentro de um conjunto de duplicatas identificadas. Analisa os metadados dos arquivos (definidos em `fotix.core.models`) com base em critérios configurados (ex: resolução, data).
-    *   *Justificativa da Ordem:* Representa uma parte pura da lógica de negócio (Core). Depende apenas dos `models` e `utils`, podendo ser desenvolvida e testada isoladamente no início.
+2.  **`fotix.infrastructure.file_system`**
+    *   **Descrição de Alto Nível Inicial:** Implementar a interface `IFileSystemService` definida em `fotix.infrastructure.interfaces`. Esta implementação proverá funcionalidades concretas para interagir com o sistema de arquivos local, como listar diretórios, obter tamanho de arquivo, ler conteúdo de forma eficiente (streaming), mover para a lixeira e copiar arquivos, usando bibliotecas como `pathlib`, `shutil` e `send2trash`.
+    *   *Justificativa da Ordem:* Operações de sistema de arquivos são a base para muitas outras funcionalidades (scan, backup, core). Implementar esta abstração cedo permite que os módulos Core e Application dependam de um contrato estável (`IFileSystemService`).
 
-3.  **`fotix.infrastructure.file_system`**
-    *   **Descrição de Alto Nível Inicial:** Implementa a interface `IFileSystemService`, fornecendo a funcionalidade concreta para interagir com o sistema de arquivos. Encapsula operações como leitura de tamanho de arquivo, listagem de diretórios, leitura de conteúdo e movimentação para a lixeira, usando bibliotecas como `pathlib` e `send2trash`.
-    *   *Justificativa da Ordem:* É um serviço de infraestrutura fundamental, necessário para muitas outras partes do sistema (Core e Application). Depende de `interfaces`, `utils` e bibliotecas externas.
+3.  **`fotix.infrastructure.zip_handler`**
+    *   **Descrição de Alto Nível Inicial:** Implementar a interface `IZipHandlerService` definida em `fotix.infrastructure.interfaces`. Focará em ler o conteúdo de arquivos dentro de arquivos ZIP de forma eficiente (streaming), sem a necessidade de extração completa para o disco, utilizando a biblioteca `stream-unzip`.
+    *   *Justificativa da Ordem:* Necessário para a funcionalidade central de scan dentro de ZIPs. Depende de conceitos básicos de arquivo (caminhos), mas é uma capacidade específica de IO que o Core precisará (via interface).
 
-4.  **`fotix.infrastructure.zip_handler`**
-    *   **Descrição de Alto Nível Inicial:** Implementa a interface `IZipHandlerService` para lidar com a leitura de arquivos dentro de arquivos ZIP de forma eficiente (streaming). Permite acessar nomes, tamanhos e conteúdo dos arquivos internos sem extração completa.
-    *   *Justificativa da Ordem:* Serviço de infraestrutura específico, necessário para a funcionalidade de busca de duplicatas (`duplicate_finder`). Depende de `interfaces` e bibliotecas externas.
+4.  **`fotix.infrastructure.concurrency`**
+    *   **Descrição de Alto Nível Inicial:** Implementar a interface `IConcurrencyService` definida em `fotix.infrastructure.interfaces`. Fornecerá uma forma abstrata de executar tarefas em paralelo (provavelmente usando `concurrent.futures.ThreadPoolExecutor` inicialmente) para otimizar operações como hashing de múltiplos arquivos.
+    *   *Justificativa da Ordem:* A concorrência será crucial para o desempenho do `duplicate_finder`. Implementar esta abstração permite que a lógica de concorrência seja gerenciada separadamente da lógica de negócio principal.
 
-5.  **`fotix.infrastructure.concurrency`**
-    *   **Descrição de Alto Nível Inicial:** Implementa a interface `IConcurrencyService` para gerenciar a execução de tarefas em paralelo ou em background. Abstrai o uso de mecanismos como `concurrent.futures` (Thread/Process Pools).
-    *   *Justificativa da Ordem:* Serviço de infraestrutura necessário para otimizar tarefas demoradas como a varredura e hashing na camada de Aplicação (`ScanService`). Depende de `interfaces` e bibliotecas externas.
+5.  **`fotix.infrastructure.backup`**
+    *   **Descrição de Alto Nível Inicial:** Implementar a interface `IBackupService` definida em `fotix.infrastructure.interfaces`. Gerenciará a cópia segura de arquivos para uma área de backup designada, o armazenamento de metadados sobre os backups e a capacidade de listar e restaurar esses backups. Utilizará o `IFileSystemService` para operações de arquivo.
+    *   *Justificativa da Ordem:* Implementa a funcionalidade de backup/restauração. Depende do `IFileSystemService` e possivelmente de `fotix.core.models` (para `FileInfo`). É uma parte importante da infraestrutura de segurança/recuperação.
 
 6.  **`fotix.core.duplicate_finder`**
-    *   **Descrição de Alto Nível Inicial:** Implementa a lógica central de detecção de duplicatas. Utiliza hashing (BLAKE3) e comparação de arquivos, interagindo com o sistema de arquivos e arquivos ZIP através das abstrações (`IFileSystemService`, `IZipHandlerService`) para manter-se independente da infraestrutura concreta.
-    *   *Justificativa da Ordem:* Componente central da lógica de negócio. Depende dos `models`, `utils` e das *interfaces* de infraestrutura (que já teriam suas implementações básicas prontas nos passos anteriores para permitir testes integrados).
+    *   **Descrição de Alto Nível Inicial:** Implementar a lógica central de detecção de duplicatas, definindo e implementando a interface `IDuplicateFinderService` (de `fotix.core.interfaces`). Utilizará as abstrações `IFileSystemService` e `IZipHandlerService` (injetadas) para acessar dados de arquivos e ZIPs, aplicará hashing (BLAKE3) e comparação para identificar conjuntos de arquivos idênticos (`DuplicateSet` de `fotix.core.models`). Incluirá otimizações como pré-filtragem por tamanho.
+    *   *Justificativa da Ordem:* É o coração da lógica de negócio. Depende das interfaces de infraestrutura (IO, ZIP) e dos modelos de dados (`FileInfo`, `DuplicateSet`). Sua implementação habilita a funcionalidade principal da aplicação.
 
-7.  **`fotix.infrastructure.backup`**
-    *   **Descrição de Alto Nível Inicial:** Implementa a interface `IBackupService`, gerenciando a cópia segura de arquivos para uma área de backup e sua posterior restauração ou listagem. Pode envolver o armazenamento de metadados sobre os backups.
-    *   *Justificativa da Ordem:* Serviço de infraestrutura que depende de outros serviços (`IFileSystemService`), `models` e `config`. Necessário para a funcionalidade de gerenciamento e restauração na camada de Aplicação.
+7.  **`fotix.core.selection_strategy`**
+    *   **Descrição de Alto Nível Inicial:** Implementar diferentes estratégias para selecionar qual arquivo manter dentro de um `DuplicateSet`, definindo e implementando a interface `ISelectionStrategy` (de `fotix.core.interfaces`). As estratégias podem se basear em critérios como data, resolução (se aplicável a imagens/vídeos no futuro, por agora focar em data/nome/caminho), ou outros definidos nos requisitos.
+    *   *Justificativa da Ordem:* Complementa a lógica do core, definindo *como* agir sobre as duplicatas encontradas. Depende dos modelos (`DuplicateSet`, `FileInfo`) e será usada pela camada de Aplicação.
 
 8.  **`fotix.application.services.scan_service`**
-    *   **Descrição de Alto Nível Inicial:** Orquestra o caso de uso de varredura de diretórios e arquivos ZIP em busca de duplicatas. Coordena o uso dos serviços de infraestrutura (`IFileSystemService`, `IZipHandlerService`, `IConcurrencyService`) e invoca a lógica central de busca (`IDuplicateFinderService`).
-    *   *Justificativa da Ordem:* Primeiro serviço de aplicação, implementando um fluxo principal. Depende das interfaces do Core e da Infraestrutura, e de suas implementações para funcionar.
+    *   **Descrição de Alto Nível Inicial:** Orquestrar o processo completo de varredura. Irá receber os caminhos a serem escaneados, utilizar o `IDuplicateFinderService` (do Core) para encontrar as duplicatas, e possivelmente usar o `IConcurrencyService` (da Infraestrutura) para gerenciar a execução. Coordenará a interação entre Core e Infra durante a varredura.
+    *   *Justificativa da Ordem:* É o primeiro serviço de aplicação que orquestra um fluxo de trabalho principal, utilizando serviços do Core e da Infraestrutura já implementados (ou suas interfaces).
 
 9.  **`fotix.application.services.duplicate_management_service`**
-    *   **Descrição de Alto Nível Inicial:** Orquestra o caso de uso de gerenciamento das duplicatas encontradas. Utiliza a estratégia de seleção (`ISelectionStrategy`) para determinar o arquivo a manter e coordena a remoção segura (via `IFileSystemService`) e o backup (via `IBackupService`) dos demais.
-    *   *Justificativa da Ordem:* Serviço de aplicação complementar ao `ScanService`. Depende das interfaces do Core (`ISelectionStrategy`), da Infraestrutura (`IFileSystemService`, `IBackupService`) e dos `models`.
+    *   **Descrição de Alto Nível Inicial:** Gerenciar as ações sobre os conjuntos de duplicatas encontrados. Utilizará a `ISelectionStrategy` (do Core) para determinar o arquivo a manter, e os serviços `IFileSystemService` (para mover para a lixeira) e `IBackupService` (para backup antes da remoção) da Infraestrutura para executar as ações.
+    *   *Justificativa da Ordem:* Orquestra o fluxo de resolução de duplicatas, dependendo dos resultados do scan (implícito), das estratégias do Core e dos serviços de manipulação de arquivos/backup da Infraestrutura.
 
 10. **`fotix.application.services.backup_restore_service`**
-    *   **Descrição de Alto Nível Inicial:** Orquestra os casos de uso relacionados à gestão de backups. Utiliza o `IBackupService` para listar backups existentes, restaurar arquivos a partir de um backup específico e possivelmente excluir backups antigos.
-    *   *Justificativa da Ordem:* Serviço de aplicação focado na funcionalidade de backup/restauração. Depende principalmente da interface `IBackupService` e `IFileSystemService`.
+    *   **Descrição de Alto Nível Inicial:** Orquestrar as operações relacionadas a backups. Utilizará o `IBackupService` para listar, restaurar e deletar backups, e o `IFileSystemService` se necessário para operações de arquivo durante a restauração.
+    *   *Justificativa da Ordem:* Implementa a interface do usuário para a funcionalidade de backup/restauração, dependendo diretamente do `IBackupService` da Infraestrutura.
 
-11. **`fotix.ui`**
-    *   **Descrição de Alto Nível Inicial:** Implementa a interface gráfica do usuário (GUI) usando PySide6. Exibe informações (arquivos, duplicatas, progresso), captura entradas do usuário (pastas, seleções, confirmações) e interage com a camada de Aplicação para iniciar ações e receber atualizações.
-    *   *Justificativa da Ordem:* A camada de apresentação depende da camada de Aplicação (serviços/interfaces) para executar as funcionalidades e dos `models` para exibir dados. É implementada após a lógica principal estar disponível.
+11. **`fotix.ui` (Implementação Principal, ex: `fotix.ui.main_window`)**
+    *   **Descrição de Alto Nível Inicial:** Construir a interface gráfica do usuário utilizando PySide6. Exibirá os controles para iniciar a varredura, mostrará os resultados (conjuntos de duplicatas), permitirá ao usuário revisar e confirmar ações (remoção/backup), exibirá progresso e status, e permitirá gerenciar backups. Interagirá com os serviços da camada de Aplicação (`ScanService`, `DuplicateManagementService`, `BackupRestoreService`).
+    *   *Justificativa da Ordem:* A UI é a camada mais externa, dependendo dos serviços da camada de Aplicação para realizar qualquer ação significativa. Só pode ser construída de forma funcional quando a camada de aplicação estiver pronta.
 
 12. **`fotix.main`**
-    *   **Descrição de Alto Nível Inicial:** Ponto de entrada principal da aplicação Fotix. Responsável por inicializar os componentes necessários (configuração, logging, serviços da aplicação, UI), conectar as camadas e iniciar o loop de eventos da interface gráfica.
-    *   *Justificativa da Ordem:* É o ponto que une todas as partes. Precisa que a UI e os serviços da Aplicação estejam prontos para serem instanciados e conectados.
-
----
-
-**Observação sobre Ciclos:** Nenhuma dependência cíclica *entre os módulos principais listados na ordem* foi detectada com base no blueprint fornecido. As dependências seguem o fluxo esperado da Arquitetura em Camadas (UI -> Application -> Core / Infrastructure).
+    *   **Descrição de Alto Nível Inicial:** Ponto de entrada da aplicação. Será responsável por inicializar as dependências (configuração, logging), instanciar as camadas (Infraestrutura, Core, Aplicação - configurando a injeção de dependência se aplicável), criar e exibir a janela principal da UI (`fotix.ui.main_window`), e iniciar o loop de eventos da aplicação Qt.
+    *   *Justificativa da Ordem:* É o ponto final que conecta todas as partes e inicia a execução da aplicação. Depende da UI e da inicialização das camadas inferiores.
