@@ -4,11 +4,11 @@
 
 **Contexto Essencial (Fornecido pelo Coordenador):**
 
-1.  **Funcionalidade/Componente Alvo Principal:** `Item 1: fotix.infrastructure.logging_config`
+1.  **Funcionalidade/Componente Alvo Principal:** `fotix.infrastructure.file_system`
 2.  **Blueprint Arquitetural:** `@Output_BluePrint_Arquitetural_Tocrisna_v3.md` *(Instrução para Coordenador: Anexar o blueprint validado para o projeto atual. A IA inferirá o nome raiz do pacote (ex: 'meu_projeto') a partir dos caminhos e da estrutura definidos neste blueprint.)*
 3.  **Ordem e Descrições Iniciais:** `@Output_Ordem_Para_Implementacao_Geral.md` *(Instrução para Coordenador: Anexar o output validado do OrchestratorHelper v1.4 ou superior, adaptado para o projeto atual)*
 4.  **Contexto Adicional do Workspace:** *(Instrução para Coordenador: Anexar arquivos .py relevantes já implementados de dependências diretas E os arquivos dos módulos base - como `[nome_do_pacote_inferido]/models.py`, `[nome_do_pacote_inferido]/utils/helpers.py`, etc. - se já existirem e forem relevantes para o alvo)*
-5.  **Confirmação do Plano Inicial Requerida pelo Coordenador? (Sim/Não):** `Sim`
+5.  **Confirmação do Plano Inicial Requerida pelo Coordenador? (Sim/Não):** `Não`
 
 **Instruções Detalhadas para a IA (ImplementadorMestre):**
 

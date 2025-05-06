@@ -1,5 +1,8 @@
 """
 Testes unitários para o módulo de configuração de logging.
+
+Este módulo contém testes para a implementação do serviço de logging,
+incluindo casos normais, casos de erro e casos de borda.
 """
 
 import logging
@@ -45,7 +48,14 @@ def reset_loggers():
     logger = logging.getLogger("fotix.test")
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
+    
+    # Remover todos os handlers do logger fotix.test_remove_handlers
+    logger = logging.getLogger("fotix.test_remove_handlers")
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
 
+
+# Testes para configure_logging
 
 def test_configure_logging_creates_logger():
     """Testa se configure_logging cria um logger com o nome correto."""
@@ -148,6 +158,38 @@ def test_configure_logging_disables_file_handler(mock_config):
     assert len(file_handlers) == 0
 
 
+def test_configure_logging_removes_existing_handlers():
+    """
+    Testa se configure_logging remove handlers existentes.
+    
+    Este teste é específico para cobrir a linha 51 em logging_config.py
+    que remove handlers existentes do logger.
+    """
+    # Criar um logger com o mesmo nome que será usado em configure_logging
+    logger_name = "fotix.test_remove_handlers"
+    logger = logging.getLogger(logger_name)
+    
+    # Adicionar um handler ao logger
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
+    
+    # Verificar que o logger tem um handler
+    assert len(logger.handlers) == 1
+    
+    # Configurar o logger com o mesmo nome
+    with mock.patch("fotix.infrastructure.logging_config.get_config"):
+        # Desabilitar handlers para simplificar o teste
+        with mock.patch("fotix.infrastructure.logging_config._create_console_handler"):
+            with mock.patch("fotix.infrastructure.logging_config._create_file_handler"):
+                configure_logging(logger_name)
+    
+    # Verificar que o handler original foi removido
+    # O logger pode ter novos handlers dependendo da configuração
+    assert handler not in logger.handlers
+
+
+# Testes para get_logger
+
 def test_get_logger_calls_configure_logging():
     """Testa se get_logger chama configure_logging quando o logger raiz não tem handlers."""
     # Garantir que o logger raiz não tenha handlers
@@ -195,6 +237,8 @@ def test_get_logger_handles_full_name():
     # Verificar se o logger tem o nome correto
     assert logger.name == "fotix.test_module"
 
+
+# Testes para set_log_level
 
 def test_set_log_level_with_string():
     """Testa se set_log_level define o nível de log a partir de uma string."""
