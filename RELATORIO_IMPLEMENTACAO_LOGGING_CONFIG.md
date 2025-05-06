@@ -109,9 +109,9 @@ O módulo de logging (`fotix.infrastructure.logging_config`) foi implementado pa
 
 ### 4.4. Implementação dos Testes Unitários
 
-Foram implementados testes unitários abrangentes para os módulos de configuração e logging, garantindo o funcionamento correto de todas as funcionalidades.
+Foram implementados testes unitários abrangentes para os módulos de configuração e logging, garantindo o funcionamento correto de todas as funcionalidades e atingindo 100% de cobertura de código.
 
-**Principais testes implementados:**
+**Principais testes implementados para o módulo de logging:**
 
 - Testes para a criação e configuração de loggers.
 - Testes para a configuração de níveis de log.
@@ -119,12 +119,23 @@ Foram implementados testes unitários abrangentes para os módulos de configura�
 - Testes para a desabilitação de handlers.
 - Testes para a obtenção de loggers para módulos específicos.
 - Testes para a definição de níveis de log.
+- Testes para a remoção de handlers existentes.
+
+**Principais testes implementados para o módulo de configuração:**
+
+- Testes para a criação e inicialização da configuração.
+- Testes para o carregamento e salvamento de configurações.
+- Testes para o tratamento de erros de JSON e IO.
+- Testes para a adição de valores padrão em configurações incompletas.
+- Testes para a obtenção e definição de valores de configuração.
+- Testes para o padrão singleton do `get_config()`.
 
 **Decisões de Design:**
 
 - **Fixtures**: Utilizadas para configurar o ambiente de teste e garantir isolamento entre os testes.
 - **Mocks**: Utilizados para simular comportamentos e isolar os testes de dependências externas.
-- **Cobertura Abrangente**: Buscada para garantir que todas as funcionalidades sejam testadas.
+- **Cobertura Completa**: Alcançada para garantir que todas as linhas de código sejam testadas, incluindo tratamento de exceções e casos limites.
+- **Testes Específicos**: Criados para cobrir caminhos de código específicos que não eram cobertos pelos testes gerais.
 
 ### 4.5. Documentação e Exemplos
 
@@ -145,13 +156,19 @@ Foram criados documentação e exemplos para facilitar o uso dos módulos implem
 
 **Problema**: Testar o sistema de logging sem interferir no sistema de logging global do Python.
 
-**Solução**: Usar mocks para simular o comportamento do sistema de logging e garantir isolamento entre os testes.
+**Solução**: Usar mocks para simular o comportamento do sistema de logging e garantir isolamento entre os testes. Implementar fixtures para resetar o estado dos loggers após cada teste.
 
 ### 5.3. Desafio: Parâmetros Não Utilizados
 
 **Problema**: Avisos sobre parâmetros não utilizados nos testes.
 
 **Solução**: Remover os parâmetros não utilizados ou torná-los opcionais.
+
+### 5.4. Desafio: Cobertura de Código Completa
+
+**Problema**: Alcançar 100% de cobertura de código, incluindo caminhos de tratamento de exceções e casos limites.
+
+**Solução**: Implementar testes específicos para cada caminho de código, usando mocks para simular condições de erro e casos limites. Criar testes adicionais para cobrir caminhos específicos que não eram cobertos pelos testes gerais.
 
 ## 6. Resultados
 
@@ -170,6 +187,8 @@ Foram implementados os seguintes arquivos:
    - `tests/unit/__init__.py`: Arquivo de inicialização do pacote de testes unitários.
    - `tests/unit/infrastructure/__init__.py`: Arquivo de inicialização do pacote de testes de infraestrutura.
    - `tests/unit/infrastructure/test_logging_config.py`: Testes unitários para o módulo de logging.
+   - `tests/unit/infrastructure/test_logging_config_extra.py`: Testes adicionais para o módulo de logging.
+   - `tests/unit/test_config.py`: Testes unitários para o módulo de configuração.
    - `tests/conftest.py`: Configuração para os testes.
 
 3. **Exemplos e Configuração**:
@@ -178,12 +197,14 @@ Foram implementados os seguintes arquivos:
 
 ### 6.2. Cobertura de Testes
 
-A cobertura de testes é excelente:
+A cobertura de testes é excelente, atingindo 100% em todos os módulos:
 - `src/fotix/__init__.py`: 100%
-- `src/fotix/config.py`: 82%
+- `src/fotix/config.py`: 100%
 - `src/fotix/infrastructure/__init__.py`: 100%
-- `src/fotix/infrastructure/logging_config.py`: 99%
-- **Total**: 91%
+- `src/fotix/infrastructure/logging_config.py`: 100%
+- **Total**: 100%
+
+Foram implementados testes adicionais para cobrir todos os caminhos de código, incluindo tratamento de exceções e casos limites, garantindo uma cobertura completa.
 
 ### 6.3. Funcionalidades Implementadas
 
@@ -213,9 +234,11 @@ O componente fornece uma base sólida para o sistema de logging da aplicação F
 
 1. Implementar os próximos componentes da infraestrutura conforme o blueprint arquitetural.
 2. Integrar o módulo de logging com os outros componentes da aplicação.
-3. Expandir a cobertura de testes para o módulo de configuração.
+3. Manter a cobertura de testes de 100% para todos os novos componentes desenvolvidos.
+4. Implementar testes de integração para verificar o funcionamento conjunto dos componentes.
 
 ---
 
 **Data de Conclusão**: 05/05/2025
+**Atualização de Cobertura de Testes**: 10/05/2025
 **Autor**: Equipe de Desenvolvimento Fotix
