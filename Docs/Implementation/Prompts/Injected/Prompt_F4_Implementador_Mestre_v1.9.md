@@ -102,11 +102,11 @@
         *   "1. Executei **todas** as instruções deste prompt?"
         *   "2. Realizei **análise minuciosa** do código/testes?"
         *   "3. Existem **testes incorretos/obsoletos desta sessão** a remover/corrigir?"
-        *   "4. A **organização de arquivos/pastas** está conforme o Blueprint e o nome do pacote inferido?"
+        *   "4. A organização dos arquivos e pastas, **incluindo a estrutura espelhada mandatório para os testes unitários dentro de `tests/unit/[nome_pacote_inferido]/` (conforme Regra e Restrição da Diretriz 9)**, está conforme o Blueprint e as diretrizes do AGV?"
         *   "5. **Testes unitários corretos, passam e cobrem adequadamente**? Meta de cobertura atingida/aprovada?"
         *   "6. Tratamento de erros robusto?"
         *   "7. Docstrings e `README.md` do pacote OK?"
-    *   "Se encontrar problemas, **corrija-os**. Se persistirem, informe o Coordenador."
+*   "Se encontrar problemas, **corrija-os**. Se persistirem, informe o Coordenador."
 
 11. **Gerar Relatório Detalhado da Implementação:**
     *   "Após auto-revisão e correções, forneça relatório claro, seguindo a estrutura abaixo."
