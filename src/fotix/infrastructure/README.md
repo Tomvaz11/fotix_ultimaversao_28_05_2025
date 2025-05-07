@@ -6,6 +6,44 @@ Este diretório contém os módulos de infraestrutura do Fotix, que são respons
 
 O módulo `file_system.py` implementa a interface `IFileSystemService` definida em `interfaces.py`, fornecendo funcionalidades concretas para interagir com o sistema de arquivos local, como listar diretórios, obter tamanho de arquivo, ler conteúdo de forma eficiente (streaming), mover para a lixeira e copiar arquivos.
 
+## Módulo de Manipulação de Arquivos ZIP (`zip_handler.py`)
+
+O módulo `zip_handler.py` implementa a interface `IZipHandlerService` definida em `interfaces.py`, fornecendo funcionalidades para ler o conteúdo de arquivos dentro de arquivos ZIP de forma eficiente (streaming), sem a necessidade de extração completa para o disco.
+
+### Funcionalidades
+
+- **Stream de Arquivos ZIP**: Permite processar arquivos ZIP sem extraí-los completamente para o disco, economizando espaço e melhorando o desempenho.
+- **Filtragem por Extensão**: Suporta filtragem de arquivos por extensão, permitindo processar apenas os tipos de arquivo desejados.
+- **Acesso Lazy**: Fornece acesso lazy ao conteúdo dos arquivos, permitindo que o chamador decida quando consumir o conteúdo.
+
+### Como usar
+
+```python
+from pathlib import Path
+from fotix.infrastructure.zip_handler import ZipHandlerService
+
+# Criar uma instância do serviço
+zip_service = ZipHandlerService()
+
+# Processar um arquivo ZIP
+zip_path = Path("caminho/para/arquivo.zip")
+for file_name, file_size, content_fn in zip_service.stream_zip_entries(zip_path):
+    print(f"Arquivo: {file_name}, Tamanho: {file_size} bytes")
+
+    # Processar o conteúdo do arquivo
+    for chunk in content_fn():
+        # Fazer algo com o chunk
+        pass
+
+# Processar apenas arquivos com extensões específicas
+for file_name, file_size, content_fn in zip_service.stream_zip_entries(
+    zip_path,
+    file_extensions=[".jpg", ".png", ".gif"]
+):
+    # Processar apenas imagens
+    process_image(file_name, content_fn())
+```
+
 ### Funcionalidades
 
 - Obtenção de tamanho, data de criação e modificação de arquivos
