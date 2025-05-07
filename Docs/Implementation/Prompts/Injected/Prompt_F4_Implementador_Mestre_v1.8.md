@@ -1,10 +1,10 @@
-# AGV Prompt Template: ImplementadorMestre v1.7 - Implementação Autônoma Guiada com Auto-Revisão
+# AGV Prompt Template: ImplementadorMestre v1.8 - Implementação Autônoma Guiada com Auto-Revisão
 
 **Tarefa Principal:** Implementar ou modificar o componente lógico alvo especificado abaixo, utilizando o Blueprint Arquitetural como guia. Criar ou modificar autonomamente os módulos base necessários (models, utils, config, interfaces) conforme as definições do blueprint e boas práticas. **Gerar testes unitários OBRIGATÓRIOS para TODO código novo ou modificado (tanto no módulo principal quanto nos módulos base/utils).** Interagir com o Coordenador via "Propor e Confirmar" apenas para ambiguidades na lógica principal do alvo ou para confirmar o plano de implementação inicial (se solicitado).
 
 **Contexto Essencial (Fornecido pelo Coordenador):**
 
-1.  **Funcionalidade/Componente Alvo Principal:** `fotix.infrastructure.zip_handler`
+1.  **Funcionalidade/Componente Alvo Principal:** `fotix.config`
 2.  **Blueprint Arquitetural:** `@Output_BluePrint_Arquitetural_Tocrisna_v3.md` *(Instrução para Coordenador: Anexar o blueprint validado para o projeto atual. A IA inferirá o nome raiz do pacote (ex: 'meu_projeto') a partir dos caminhos e da estrutura definidos neste blueprint.)*
 3.  **Ordem e Descrições Iniciais:** `@Output_Ordem_Para_Implementacao_Geral.md` *(Instrução para Coordenador: Anexar o output validado do OrchestratorHelper v1.4 ou superior, adaptado para o projeto atual)*
 4.  **Contexto Adicional do Workspace:** *(Instrução para Coordenador: Anexar arquivos .py relevantes já implementados de dependências diretas E os arquivos dos módulos base - como `[nome_do_pacote_inferido]/models.py`, `[nome_do_pacote_inferido]/utils/helpers.py`, etc. - se já existirem e forem relevantes para o alvo)*
@@ -86,7 +86,7 @@
     *   Crie/atualize `README.md` no diretório do pacote do "Componente Alvo Principal" (ex: `src/[nome_pacote_inferido]/infrastructure/README.md`), descrevendo o pacote e seus módulos.
 
 9.  **Gerar Testes Unitários - MANDATÓRIO E ABRANGENTE:**
-    *   `pytest` para TODO código novo/modificado (Alvo, Base, Utils). Não omita. Meta: 100% cobertura (ou aprovada pelo Coordenador). Casos de sucesso, erro, borda. Mocks. Estrutura `tests/unit/` (ex: testes para `src/[nome_pacote_inferido]/...` em `tests/unit/[nome_pacote_inferido]/...`). Adicione testes faltantes se identificar lacunas.
+    *   `pytest` para TODO código novo/modificado (Alvo, Base, Utils). Não omita. Meta: 100% cobertura (ou aprovada pelo Coordenador). Casos de sucesso, erro, borda. Mocks. Coloque os testes na estrutura tests/unit/ espelhando a estrutura do código fonte (ex: testes para src/[nome_pacote_inferido]/[camada]/modulo.py devem ir em tests/unit/[nome_pacote_inferido]/[camada]/test_modulo.py). Crie os diretórios de teste necessários, incluindo os __init__.py, se aplicável pela estrutura do projeto. Adicione testes faltantes se identificar lacunas.
 
 10.  **Executar Checklist de Auto-Revisão Final (Antes de Gerar o Relatório):**
     *   "Antes de concluir, revise criticamente seu trabalho, respondendo internamente às seguintes questões:"
