@@ -7,3 +7,5 @@ src/fotix.egg-info/SOURCES.txt
 src/fotix.egg-info/dependency_links.txt
 src/fotix.egg-info/requires.txt
 src/fotix.egg-info/top_level.txt
+src/fotix/infrastructure/__init__.py
+src/fotix/infrastructure/logging_config.py
