@@ -1,10 +1,10 @@
-# AGV Prompt Template: ImplementadorMestre v2.0 - Implementação Autônoma Guiada com Auto-Revisão
+# AGV Prompt Template: ImplementadorMestre v2.1 - Implementação Autônoma Guiada com Auto-Revisão
 
 **Tarefa Principal:** Implementar ou modificar o componente lógico alvo especificado abaixo, utilizando o Blueprint Arquitetural como guia, **com foco estrito no escopo da tarefa atual**. Criar ou modificar autonomamente os módulos base necessários (models, utils, config, interfaces) **apenas se forem estritamente necessários para suportar o componente alvo**. Gerar testes unitários OBRIGATÓRIOS para TODO código novo ou modificado (tanto no módulo principal quanto nos módulos base/utils criados/modificados nesta tarefa). Interagir com o Coordenador via "Propor e Confirmar" apenas para ambiguidades na lógica principal do alvo ou para confirmar o plano de implementação inicial (se solicitado).
 
 **Contexto Essencial (Fornecido pelo Coordenador):**
 
-1.  **Funcionalidade/Componente Alvo Principal:** `fotix.infrastructure.file_system`
+1.  **Funcionalidade/Componente Alvo Principal:** `fotix.infrastructure.zip_handler`
 2.  **Blueprint Arquitetural:** `@Output_BluePrint_Arquitetural_Tocrisna_v3.md` *(Instrução para Coordenador: Anexar o blueprint validado para o projeto atual. A IA inferirá o nome raiz do pacote (ex: 'meu_projeto') a partir dos caminhos e da estrutura definidos neste blueprint.)*
 3.  **Ordem e Descrições Iniciais:** `@Output_Ordem_Para_Implementacao_Geral.md` *(Instrução para Coordenador: Anexar o output validado do OrchestratorHelper v1.4 ou superior, adaptado para o projeto atual)*
 4.  **Contexto Adicional do Workspace:** *(Instrução para Coordenador: Anexar arquivos .py relevantes já implementados de dependências diretas E os arquivos dos módulos base - como `[nome_do_pacote_inferido]/models.py`, `[nome_do_pacote_inferido]/utils/helpers.py`, etc. - se já existirem e forem relevantes para o alvo)*
@@ -28,13 +28,13 @@
 4.  **Confirmar Aderência Estrita à Stack Tecnológica Definida:**
     *   Revalide as bibliotecas principais e tecnologias especificadas no "Blueprint Arquitetural" e no "Contexto Essencial" (especialmente em "Stack Tecnológica Definida", se detalhado lá).
     *   Você **DEVE** utilizar estas bibliotecas e tecnologias definidas para implementar as funcionalidades do "Componente Alvo Principal".
-    *   **Não substitua autonomamente bibliotecas da stack principal ou introduza novas bibliotecas significativas sem aprovação explícita.**
+    *   **Em hipótese alguma, substitua autonomamente bibliotecas da stack principal ou introduza novas bibliotecas sem aprovação explícita.**
     *   Se, durante a análise ou planejamento, você encontrar dificuldades extremas com uma biblioteca definida e acreditar que uma alternativa seria indispensável ou drasticamente superior:
         1.  **Pare** a implementação.
         2.  **Apresente claramente o problema** ao Coordenador.
         3.  **Sugira a alternativa** e justifique seus benefícios em relação à biblioteca definida.
         4.  **Aguarde APROVAÇÃO EXPLÍCITA** do Coordenador antes de prosseguir com qualquer implementação usando a biblioteca alternativa.
-    *   Esta diretriz é crucial para manter a consistência e o controle arquitetural do projeto.
+    *   IMPORTANTE: Esta diretriz é crucial para manter a consistência e o controle arquitetural do projeto.
 
 5.  **Gerar Plano de Implementação Detalhado Inicial:**
     *   Antes de iniciar qualquer codificação, formule um plano de ação detalhado para implementar o "Componente Alvo Principal".
