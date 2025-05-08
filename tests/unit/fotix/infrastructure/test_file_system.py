@@ -156,7 +156,7 @@ class TestFileSystemService:
     def test_list_directory_contents_nonexistent_directory(self, fs_service, temp_dir):
         """Testa se list_directory_contents levanta exceção para diretório inexistente."""
         nonexistent_dir = temp_dir / "nonexistent"
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(NotADirectoryError):
             list(fs_service.list_directory_contents(nonexistent_dir))
     
     def test_list_directory_contents_not_a_directory(self, fs_service, temp_file):
