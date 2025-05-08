@@ -45,6 +45,6 @@ echo.
 
 echo ===== SUCESSO! =====
 echo Suas alteracoes foram enviadas para o GitHub no branch main.
-echo Voce pode verificar o status em: https://github.com/Tomvaz11/Fotix
+echo Voce pode verificar o status em: https://github.com/Tomvaz11/fotix
 echo.
 pause
