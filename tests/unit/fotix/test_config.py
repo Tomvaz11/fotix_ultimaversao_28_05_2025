@@ -237,6 +237,40 @@ class TestConfigManager(unittest.TestCase):
         # Verifica se o método foi chamado
         mock_get_path.assert_called_once()
 
+    @patch('os.name', 'posix')  # Simula um sistema Unix-like
+    def test_config_file_path_unix_like(self):
+        """Testa o caminho do arquivo de configuração em sistemas Unix-like."""
+        # Temporariamente remove o patch existente para _get_config_file_path
+        self.patcher.stop()
+
+        # Cria um patch para Path.home() que será aplicado apenas neste teste
+        with patch('pathlib.Path.home') as mock_home:
+            # Configura o mock para Path.home()
+            mock_home_path = MagicMock(spec=Path)
+            mock_home.return_value = mock_home_path
+
+            # Configura o comportamento do caminho mockado
+            config_dir_mock = MagicMock(spec=Path)
+            mock_home_path.__truediv__.return_value = config_dir_mock
+            config_dir_mock.__truediv__.return_value = config_dir_mock
+
+            # Reseta o singleton para forçar a reinicialização
+            ConfigManager._instance = None
+
+            # Cria uma instância do ConfigManager, que chamará _get_config_file_path internamente
+            # durante a inicialização
+            ConfigManager()
+
+            # Verifica se os caminhos foram construídos corretamente
+            mock_home_path.__truediv__.assert_called_with(".config")
+            config_dir_mock.__truediv__.assert_any_call("fotix")
+
+            # Verifica se mkdir foi chamado com os argumentos corretos
+            config_dir_mock.mkdir.assert_called_with(parents=True, exist_ok=True)
+
+        # Restaura o patch original para não afetar outros testes
+        self.mock_get_path = self.patcher.start()
+
 
 class TestConfigFunctions(unittest.TestCase):
     """Testes para as funções de conveniência do módulo config."""
