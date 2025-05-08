@@ -95,4 +95,3 @@
 *   Código Python de testes de integração (`pytest`) bem estruturados, legíveis e eficazes.
 *   Fixtures `pytest` necessárias para suportar os testes.
 *   Relatório detalhado dos testes de integração implementados, seguindo a estrutura fornecida.
-```
