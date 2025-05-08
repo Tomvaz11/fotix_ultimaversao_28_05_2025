@@ -4,6 +4,78 @@ Este pacote contém os módulos responsáveis pela interação com o mundo exter
 
 ## Módulos
 
+### file_system.py
+
+O módulo `file_system.py` implementa a interface `IFileSystemService` para abstrair operações no sistema de arquivos, como leitura, escrita, movimentação para lixeira e listagem de diretórios.
+
+#### Principais funcionalidades
+
+- Obtenção de tamanho, datas de criação e modificação de arquivos
+- Streaming de conteúdo de arquivos em blocos para processamento eficiente
+- Listagem recursiva de diretórios com filtros por extensão
+- Movimentação de arquivos para a lixeira do sistema (usando `send2trash`)
+- Cópia de arquivos preservando metadados
+- Criação de diretórios (incluindo diretórios aninhados)
+- Verificação de existência de caminhos
+
+#### Como usar
+
+```python
+from pathlib import Path
+from fotix.infrastructure.file_system import FileSystemService
+
+# Criar uma instância do serviço
+fs_service = FileSystemService()
+
+# Obter tamanho de um arquivo
+size = fs_service.get_file_size(Path("caminho/para/arquivo.txt"))
+
+# Ler conteúdo de um arquivo em blocos
+for chunk in fs_service.stream_file_content(Path("arquivo_grande.dat")):
+    # Processar cada bloco de bytes
+    process_data(chunk)
+
+# Listar arquivos em um diretório recursivamente
+for file_path in fs_service.list_directory_contents(
+    Path("diretorio"),
+    recursive=True,
+    file_extensions=[".jpg", ".png"]
+):
+    print(f"Encontrado: {file_path}")
+
+# Mover um arquivo para a lixeira
+fs_service.move_to_trash(Path("arquivo_a_remover.txt"))
+
+# Copiar um arquivo
+fs_service.copy_file(
+    Path("arquivo_original.txt"),
+    Path("copia_do_arquivo.txt")
+)
+
+# Criar um diretório
+fs_service.create_directory(Path("novo_diretorio/subdiretorio"))
+
+# Verificar se um caminho existe
+if fs_service.path_exists(Path("arquivo.txt")):
+    print("O arquivo existe")
+
+# Obter timestamps
+creation_time = fs_service.get_creation_time(Path("arquivo.txt"))
+modification_time = fs_service.get_modification_time(Path("arquivo.txt"))
+```
+
+#### Tratamento de erros
+
+O serviço implementa tratamento robusto de erros, lançando exceções apropriadas:
+
+- `FileNotFoundError`: Quando um arquivo ou diretório não existe
+- `PermissionError`: Quando há problemas de permissão
+- `IsADirectoryError`: Quando um caminho de arquivo aponta para um diretório
+- `NotADirectoryError`: Quando um caminho de diretório aponta para um arquivo
+- `FileExistsError`: Quando um diretório já existe (ao criar com `exist_ok=False`)
+
+Todas as operações são registradas no sistema de logging, facilitando a depuração.
+
 ### logging_config.py
 
 O módulo `logging_config.py` é responsável por configurar o sistema de logging padrão do Python para a aplicação Fotix, permitindo o registro de eventos e erros.
