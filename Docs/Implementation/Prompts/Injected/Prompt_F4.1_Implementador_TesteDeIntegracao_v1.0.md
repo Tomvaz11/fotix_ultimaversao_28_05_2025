@@ -1,0 +1,98 @@
+# AGV Prompt Template: IntegradorTester v1.0 - Geração de Testes de Integração Guiada
+
+**Tarefa Principal:** Analisar o conjunto de módulos especificados (que já possuem testes unitários), o Blueprint Arquitetural, e os cenários de integração sugeridos, para **gerar testes de integração robustos (`pytest`)** que verifiquem a correta colaboração e fluxo de dados entre esses módulos.
+
+**Contexto Essencial (Fornecido pelo Coordenador):**
+
+1.  **Módulos Alvo da Integração (O Grupo Atual):**
+    *   `fotix.config`, `fotix.infrastructure.logging_config`, `fotix.infrastructure.file_system` (e seus módulos base associados como `fotix.infrastructure.interfaces`).`
+    *   *(Instrução para Coordenador: Anexar os arquivos .py destes módulos.)*
+2.  **Blueprint Arquitetural:** `Output_BluePrint_Arquitetural_Tocrisna_v3.md` *(Instrução para Coordenador: Anexar o blueprint validado.)*
+3.  **Ordem, Descrições e Cenários de Teste de Integração:** `@Output_Ordem_Para_Implementacao_Geral.md` *(Instrução para Coordenador: Anexar o output do OrchestratorHelper v1.5+ que contém a seção "PARADA PARA TESTES DE INTEGRAÇÃO" relevante.)*
+4.  **Contexto Adicional do Workspace (Outros Módulos Implementados, se relevantes para stubs/fakes):** *(Instrução para Coordenador: Anexar outros módulos já implementados que possam ser necessários para criar stubs/fakes realistas, ou interfaces de dependências externas ao grupo sendo testado.)*
+5.  **Confirmação do Plano de Teste Inicial Requerida pelo Coordenador? (Sim/Não):** `Não`
+    
+**Instruções Detalhadas para a IA (IntegradorTester):**
+
+1.  **Identificar Escopo da Integração e Cenários Sugeridos:**
+    *   Analise a lista de "Módulos Alvo da Integração".
+    *   No arquivo de "Ordem...", localize a seção "PARADA PARA TESTES DE INTEGRAÇÃO" correspondente ao grupo atual.
+    *   Extraia o "Objetivo do Teste de Integração" e os "Cenários Chave para Teste de Integração" sugeridos.
+    *   Inferira o "Nome Raiz do Pacote Principal do Projeto" (ex: `meu_projeto`) a partir dos caminhos dos módulos e do Blueprint para construir caminhos de teste corretos.
+
+2.  **Analisar Blueprint, Módulos Alvo e Interfaces:**
+    *   Consulte o "Blueprint Arquitetural" e o código dos "Módulos Alvo da Integração" (`@`) para entender:
+        *   As interfaces e contratos entre os módulos do grupo.
+        *   Os fluxos de dados esperados.
+        *   As dependências *externas* ao grupo que precisarão ser mockadas, stubbadas ou fakadas.
+
+3.  **Gerar Plano de Teste de Integração Detalhado Inicial:**
+    *   Antes de escrever os testes, formule um plano detalhado de como você abordará os testes de integração para os cenários sugeridos (e quaisquer outros que você identifique como críticos).
+    *   Este plano deve incluir:
+        *   Quais arquivos de teste de integração serão criados (ex: `tests/integration/test_subsistema_x.py`).
+        *   Quais principais funções/classes de teste serão implementadas.
+        *   Estratégia para cada cenário:
+            *   Quais módulos do grupo serão instanciados e usados com suas implementações reais.
+            *   Quais dependências *externas* ao grupo serão mockadas/stubbadas/fakadas e como (ex: mockar `IThirdPartyApiService`, usar um `FakeFileSystemService` para I/O controlado).
+            *   Principais asserções a serem feitas.
+        *   Necessidade de fixtures `pytest` para setup/teardown de dados ou serviços.
+    *   **Propor Plano ao Coordenador (SE "Confirmação do Plano de Teste Inicial Requerida?" = Sim):** Apresente este plano. Aguarde confirmação. Caso contrário, prossiga.
+
+4.  **Implementar Testes de Integração:**
+    *   Escreva o código dos testes de integração (`pytest`) nos arquivos corretos (ex: dentro de `tests/integration/[nome_raiz_pacote]/...` ou `tests/integration/...` conforme o Blueprint).
+    *   Crie fixtures `pytest` conforme necessário para setup de dados de teste, inicialização de serviços (reais dentro do escopo, fakes/stubs para externos), e teardown.
+
+5.  **Aplicar Boas Práticas de Teste de Integração:**
+    *   **Foco nas Interações:** Os testes devem verificar se os módulos do grupo colaboram corretamente conforme seus contratos (interfaces).
+    *   **Escopo Controlado:** Use implementações reais dos módulos *dentro* do escopo da integração. Para dependências *fora* desse escopo imediato, use mocks, stubs ou fakes para manter os testes focados, rápidos e determinísticos. (Ex: Se testando Aplicação-Core, a UI e o acesso real ao BD/rede podem ser mockados).
+    *   **Dados de Teste Significativos:** Use dados de teste que cubram cenários realistas e casos de borda das interações.
+    *   **Asserções Claras:** As asserções devem verificar claramente os resultados esperados das interações (estado final, valores retornados, chamadas a mocks de dependências externas).
+    *   **Isolamento entre Testes:** Garanta que cada teste de integração seja independente e não deixe estado que afete outros testes (bom uso de fixtures).
+    *   **Legibilidade:** Testes devem ser fáceis de entender.
+    *   **Documentação:** Adicione docstrings aos arquivos de teste e funções de teste complexas, explicando o propósito do teste de integração e o cenário coberto.
+
+6.  **Aderência Estrita à Stack Tecnológica Definida (para os componentes sob teste):**
+    *   Os testes devem interagir com as versões e implementações dos módulos conforme definido no Blueprint e fornecido no contexto. Não tente testar contra versões alternativas ou bibliotecas não especificadas para os componentes principais.
+
+7.  **Executar Checklist de Auto-Revisão Final (Antes de Gerar o Relatório):**
+    *   "Antes de concluir, revise seus testes de integração respondendo internamente:"
+        *   "1. Cobri todos os 'Cenários Chave para Teste de Integração' sugeridos e o 'Objetivo do Teste de Integração'?"
+        *   "2. Os testes verificam efetivamente as interações e fluxos de dados entre os 'Módulos Alvo da Integração'?"
+        *   "3. As dependências externas ao grupo de integração estão adequadamente mockadas/stubbadas/fakadas para garantir isolamento e determinismo?"
+        *   "4. Os dados de teste e as fixtures são apropriados e cobrem casos relevantes?"
+        *   "5. As asserções são claras e validam os resultados corretos?"
+        *   "6. Os testes são independentes e legíveis?"
+        *   "7. A organização dos arquivos de teste de integração está conforme o Blueprint?"
+    *   "Se esta auto-revisão revelar problemas, corrija-os. Se persistirem, informe o Coordenador."
+
+8.  **Gerar Relatório Detalhado dos Testes de Integração:**
+    *   "Após concluir a auto-revisão e quaisquer correções, forneça um relatório claro, seguindo a estrutura abaixo."
+    *   **Estrutura Mandatória para o Relatório:**
+        1.  **Introdução:** Breve resumo do escopo dos testes de integração realizados (quais módulos, qual objetivo).
+        2.  **Planejamento de Teste Inicial Proposto:** Apresente o plano do Passo 3 e comente sua execução.
+        3.  **Detalhes dos Testes de Integração Implementados:**
+            *   Para cada cenário principal testado:
+                *   Descreva o fluxo de integração verificado.
+                *   Liste os principais arquivos/funções de teste criados.
+                *   Explique a estratégia de mocking/stubbing/faking para dependências externas.
+                *   Destaque quaisquer fixtures importantes criadas.
+        4.  **Cobertura (Qualitativa):** Descreva qualitativamente o quão bem os cenários de integração sugeridos e o objetivo do teste foram cobertos. (Cobertura de código percentual pode ser difícil de medir de forma significativa e simples para testes de integração, foque na cobertura funcional dos cenários).
+        5.  **Documentação Gerada:** Confirme a criação de docstrings nos testes, se aplicável.
+        6.  **Resumo da Auto-Revisão Final (Passo 7):** Conclusões e correções.
+        7.  **Verificação de Conformidade com o Método AGV (para Testes de Integração):**
+            *   Confirme o seguimento dos princípios: Foco nas interações, Escopo controlado, Dados de teste significativos, Asserções claras.
+        8.  **Suposições, Decisões, Desafios ou Desvios Justificados:**
+            *   Suposições feitas (ex: sobre o comportamento de um mock).
+            *   Decisões de design nos testes (ex: por que usar um fake em vez de um mock).
+            *   Desafios encontrados e como foram resolvidos.
+            *   Desvios Justificados (Workarounds), se houver, com justificativa.
+        9.  **Lista de Todos os Arquivos de Teste de Integração Criados/Modificados.**
+        10. **Intervenções e Orientações do Coordenador:**
+            *   Se o Coordenador forneceu orientação que influenciou os testes, resuma aqui. Se não, declare: "A implementação dos testes de integração prosseguiu conforme o plano e as diretrizes, sem necessidade de intervenções ou orientações adicionais do Coordenador que alterassem o escopo ou a abordagem."
+
+**Resultado Esperado:**
+
+*   Código Python de testes de integração (`pytest`) bem estruturados, legíveis e eficazes.
+*   Fixtures `pytest` necessárias para suportar os testes.
+*   Relatório detalhado dos testes de integração implementados, seguindo a estrutura fornecida.
+```
