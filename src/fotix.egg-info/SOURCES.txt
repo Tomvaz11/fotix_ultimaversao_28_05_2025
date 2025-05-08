@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+src/fotix/__init__.py
+src/fotix/config.py
+src/fotix.egg-info/PKG-INFO
+src/fotix.egg-info/SOURCES.txt
+src/fotix.egg-info/dependency_links.txt
+src/fotix.egg-info/requires.txt
+src/fotix.egg-info/top_level.txt
