@@ -1,1 +1,0 @@
-"""Pacote de testes unitários do projeto Fotix.""" 
