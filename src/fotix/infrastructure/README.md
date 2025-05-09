@@ -1,15 +1,26 @@
 # Pacote de Infraestrutura (`fotix.infrastructure`)
 
-Este pacote contém módulos que lidam com interações externas e preocupações transversais da aplicação Fotix.
+Este pacote é responsável por todas as interações da aplicação Fotix com o mundo exterior e pelo fornecimento de serviços técnicos genéricos como abstrações.
 
-## Módulos Principais:
+## Módulos Principais
 
-*   `logging_config.py`: Configura o sistema de logging para toda a aplicação, com base nas definições em `fotix.config`.
-*   `file_system.py` (A ser implementado): Implementação de `IFileSystemService` para abstrair operações no sistema de arquivos.
-*   `concurrency.py` (A ser implementado): Implementação de `IConcurrencyService` para gerenciar tarefas concorrentes.
-*   `backup.py` (A ser implementado): Implementação de `IBackupService` para gerenciamento de backups.
-*   `zip_handler.py` (A ser implementado): Implementação de `IZipHandlerService` para leitura de arquivos ZIP.
-*   `interfaces.py` (A ser implementado/atualizado): Define as interfaces (contratos) para os serviços desta camada.
+-   **`interfaces.py`**: Define os contratos (interfaces Python `Protocol`) para os serviços da camada de infraestrutura. Exemplos incluem:
+    -   `IFileSystemService`: Abstração para operações no sistema de arquivos.
+    -   (Outras interfaces como `IZipHandlerService`, `IConcurrencyService`, `IBackupService` serão definidas aqui conforme são implementadas).
+
+-   **`file_system.py`**: Implementação concreta de `IFileSystemService` utilizando bibliotecas padrão do Python como `pathlib`, `shutil`, e bibliotecas de terceiros como `send2trash`.
+
+-   **`logging_config.py`**: (A ser implementado) Configuração do sistema de logging para a aplicação.
+
+-   **`zip_handler.py`**: (A ser implementado) Implementação de `IZipHandlerService` para ler arquivos dentro de arquivos ZIP (ex: usando `stream-unzip`).
+
+-   **`concurrency.py`**: (A ser implementado) Implementação de `IConcurrencyService` para gerenciar tarefas concorrentes/paralelas (ex: usando `concurrent.futures`).
+
+-   **`backup.py`**: (A ser implementado) Implementação de `IBackupService` para gerenciar backups de arquivos.
+
+## Design
+
+A camada de infraestrutura visa desacoplar as camadas superiores (Aplicação, Core) dos detalhes de implementação de interações externas. Ao depender de interfaces definidas neste pacote, as camadas superiores se tornam mais testáveis e flexíveis a mudanças nas implementações subjacentes (por exemplo, trocar a biblioteca de manipulação de ZIP ou a forma como a concorrência é gerenciada).
 
 ## Responsabilidades:
 
