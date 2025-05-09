@@ -1,6 +1,0 @@
-2025-05-08 19:31:42 - root - INFO - Sistema de log configurado. Nível: INFO, Arquivo: temp_test.log
-2025-05-08 19:31:42 - debug_script - INFO - Esta é uma mensagem INFO
-2025-05-08 19:31:42 - debug_script - WARNING - Esta é uma mensagem WARNING
-2025-05-08 19:31:42 - debug_script - ERROR - Esta é uma mensagem ERROR
-2025-05-08 19:31:42 - root - INFO - Nível de log atualizado para: DEBUG
-2025-05-08 19:31:42 - debug_script - DEBUG - Esta é uma mensagem DEBUG após a alteração do nível
