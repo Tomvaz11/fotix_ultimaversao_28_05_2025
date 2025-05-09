@@ -1,0 +1,1 @@
+"""Pacote de testes de integração para o projeto Fotix.""" 
