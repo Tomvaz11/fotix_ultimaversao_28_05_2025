@@ -1,0 +1,12 @@
+Metadata-Version: 2.4
+Name: fotix
+Version: 0.1.0
+Summary: Ferramenta para detecção e gerenciamento de arquivos duplicados
+Author: Fotix Team
+License: MIT
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: pydantic>=2.0.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
