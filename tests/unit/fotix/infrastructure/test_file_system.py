@@ -78,7 +78,9 @@ class TestFileSystemService:
         size = fs_service.get_file_size(temp_file)
         assert size is not None
         assert size > 0
-        assert size == len("Conteúdo de teste para o arquivo".encode())
+        # Obter o tamanho real do arquivo diretamente
+        real_size = temp_file.stat().st_size
+        assert size == real_size
 
     def test_get_file_size_nonexistent_file(self, fs_service, temp_dir):
         """Testa obter o tamanho de um arquivo inexistente."""
@@ -98,7 +100,10 @@ class TestFileSystemService:
             assert isinstance(chunk, bytes)
             content += chunk
 
-        expected_content = "Conteúdo de teste para o arquivo".encode()
+        # Ler o conteúdo diretamente para comparação
+        with open(temp_file, "rb") as f:
+            expected_content = f.read()
+        
         assert content == expected_content
 
     def test_stream_file_content_nonexistent_file(self, fs_service, temp_dir):
@@ -119,8 +124,13 @@ class TestFileSystemService:
         # Verifica alguns arquivos específicos
         file_paths = [str(f.relative_to(nested_dir_structure)) for f in files if f.is_file()]
         assert "file1.txt" in file_paths
-        assert "subdir1/file3.png" in file_paths
-        assert "subdir1/nested/file5.jpg" in file_paths
+        
+        # Usar Path para lidar com diferentes separadores de caminhos em diferentes SOs
+        subdir1_file3 = str(Path("subdir1") / "file3.png")
+        assert subdir1_file3 in file_paths
+        
+        subdir1_nested_file5 = str(Path("subdir1") / "nested" / "file5.jpg")
+        assert subdir1_nested_file5 in file_paths
 
     def test_list_directory_contents_non_recursive(self, fs_service, nested_dir_structure):
         """Testa a listagem não recursiva de diretórios."""
@@ -151,9 +161,16 @@ class TestFileSystemService:
         # Verifica se apenas os arquivos .jpg foram listados
         assert len(file_paths) == 2
         assert "file2.jpg" in file_paths
-        assert "subdir1/nested/file5.jpg" in file_paths
+        
+        # Usar Path para lidar com diferentes separadores de caminhos em diferentes SOs
+        subdir1_nested_file5 = str(Path("subdir1") / "nested" / "file5.jpg")
+        assert subdir1_nested_file5 in file_paths
+        
         assert "file1.txt" not in file_paths
-        assert "subdir1/file3.png" not in file_paths
+        
+        # Usar Path para lidar com diferentes separadores de caminhos
+        subdir1_file3 = str(Path("subdir1") / "file3.png")
+        assert subdir1_file3 not in file_paths
 
     def test_list_directory_contents_nonexistent_dir(self, fs_service, temp_dir):
         """Testa a exceção ao listar um diretório inexistente."""
