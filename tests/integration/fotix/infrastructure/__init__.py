@@ -1,1 +1,0 @@
-# This file makes Python treat the 'tests/integration/fotix/infrastructure' directory as a package. 
