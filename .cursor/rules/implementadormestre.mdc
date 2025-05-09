@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
-# AGV Prompt Template: ImplementadorMestre v2.1 - Implementação Autônoma Guiada com Auto-Revisão
+# AGV Prompt Template: ImplementadorMestre v2.2 - Implementação Autônoma Guiada com Auto-Revisão
 
 **Tarefa Principal:** Implementar ou modificar o componente lógico alvo especificado abaixo, utilizando o Blueprint Arquitetural como guia, **com foco estrito no escopo da tarefa atual**. Criar ou modificar autonomamente os módulos base necessários (models, utils, config, interfaces) **apenas se forem estritamente necessários para suportar o componente alvo**. Gerar testes unitários OBRIGATÓRIOS para TODO código novo ou modificado (tanto no módulo principal quanto nos módulos base/utils criados/modificados nesta tarefa). Interagir com o Coordenador via "Propor e Confirmar" apenas para ambiguidades na lógica principal do alvo ou para confirmar o plano de implementação inicial (se solicitado).
 
@@ -39,7 +39,7 @@ alwaysApply: true
         2.  **Apresente claramente o problema** ao Coordenador.
         3.  **Sugira a alternativa** e justifique seus benefícios em relação à biblioteca definida.
         4.  **Aguarde APROVAÇÃO EXPLÍCITA** do Coordenador antes de prosseguir com qualquer implementação usando a biblioteca alternativa.
-    *   IMPORTANTE: Esta diretriz é crucial para manter a consistência e o controle arquitetural do projeto.
+    *   IMPORANTE: Esta diretriz é crucial para manter a consistência e o controle arquitetural do projeto.
 
 5.  **Gerar Plano de Implementação Detalhado Inicial:**
     *   Antes de iniciar qualquer codificação, formule um plano de ação detalhado para implementar o "Componente Alvo Principal".
@@ -102,6 +102,13 @@ alwaysApply: true
         *   A meta de cobertura é de **100% ou o mais próximo humanamente possível.**
         *   Testes devem cobrir casos relevantes: sucesso, erro e borda.
         *   Use **mocks** (`unittest.mock` ou equivalentes do `pytest`) apropriadamente para isolar o código sob teste de suas dependências externas.
+        *   **Documentação dos Testes (Recomendado):**
+            *   Embora o foco principal seja a funcionalidade e cobertura, **recomenda-se fortemente** adicionar docstrings (PEP 257) para:
+                *   **Módulos de teste** (ex: `test_meu_modulo.py`): Um breve resumo do que o conjunto de testes no arquivo cobre.
+                *   **Classes de teste** (ex: `class TestMinhaClasse:`): Um breve resumo do componente ou conjunto de funcionalidades que a classe testa.
+                *   **Fixtures `pytest` complexas ou reutilizáveis:** Explicando o que a fixture configura, seu escopo, e como/por que usá-la. Para fixtures muito simples e autoexplicativas, isso pode ser opcional.
+                *   **Funções/métodos de teste individuais:** Se a lógica do teste for complexa ou o nome da função não for suficientemente descritivo, adicione uma docstring explicando o cenário específico testado e as principais asserções.
+            *   O objetivo é garantir que os testes sejam claros, legíveis e fáceis de manter.
         *   **Estrutura de Testes Mandatória:** Os testes unitários DEVEM ser colocados em uma estrutura de diretórios dentro de `tests/unit/` que **espelha estritamente** a estrutura do código fonte em `src/`.
         *   **Regra:** Testes para `src/[nome_pacote_inferido]/[sub/pacotes...]/modulo.py` DEVEM residir obrigatoriamente em `tests/unit/[nome_pacote_inferido]/[sub/pacotes...]/test_modulo.py`.
         *   **Restrição:** É **PROIBIDO** colocar arquivos de teste diretamente sob o diretório `tests/unit/` (ex: `tests/unit/test_modulo.py`) se o módulo fonte correspondente estiver localizado dentro de `src/[nome_pacote_inferido]/`. A estrutura espelhada (`tests/unit/[nome_pacote_inferido]/...`) é obrigatória.
@@ -116,7 +123,8 @@ alwaysApply: true
         *   "4. A organização dos arquivos e pastas, **incluindo a estrutura espelhada mandatório para os testes unitários dentro de `tests/unit/[nome_pacote_inferido]/` (conforme Regra e Restrição da Diretriz 9)**, está conforme o Blueprint e as diretrizes do AGV?"
         *   "5. Testes unitários corretos, passam e cobrem adequadamente o código (incluindo branches condicionais, loops e blocos de tratamento de exceção)? A meta de cobertura próxima a 100% foi atingida? **Se não, quais são as principais áreas/linhas não cobertas e por que não foi possível cobri-las?** Ou o Coordenador aprovou a cobertura atual?"
         *   "6. Tratamento de erros robusto?"
-        *   "7. Docstrings e `README.md` do pacote OK?"
+        *   "7. Docstrings no código de produção e `README.md` do pacote OK?"
+            *   "7.1. A documentação nos arquivos de teste (docstrings para módulos de teste, classes de teste, fixtures complexas e funções de teste conforme recomendado na Diretriz 10) foi considerada e aplicada onde apropriado para melhorar a clareza?"
 *   "Se encontrar problemas, **corrija-os**. Se persistirem, informe o Coordenador."
 
 12. **Gerar Relatório Detalhado da Implementação:**
@@ -139,5 +147,4 @@ alwaysApply: true
     *   Código Python de produção implementado/modificado (apenas para o alvo e seus pré-reqs diretos), com alta qualidade.
     *   Testes unitários (`pytest`) abrangentes.
     *   `README.md` do pacote (se aplicável).
-
     *   Relatório detalhado conforme estrutura.
