@@ -5,7 +5,7 @@
 **Contexto Essencial (Fornecido pelo Coordenador):**
 
 1.  **Módulos Alvo da Integração (O Grupo Atual):**
-    *   `fotix.config`, `fotix.infrastructure.logging_config`, `fotix.infrastructure.file_system` (e seus módulos base associados como `fotix.infrastructure.interfaces`).`
+    *   `fotix.infrastructure.zip_handler`, `fotix.infrastructure.concurrency`, `fotix.infrastructure.backup` (e seus módulos base associados).
     *   *(Instrução para Coordenador: Anexar os arquivos .py destes módulos.)*
 2.  **Blueprint Arquitetural:** `Output_BluePrint_Arquitetural_Tocrisna_v3.md` *(Instrução para Coordenador: Anexar o blueprint validado.)*
 3.  **Ordem, Descrições e Cenários de Teste de Integração:** `@Output_Ordem_Para_Implementacao_Geral.md` *(Instrução para Coordenador: Anexar o output do OrchestratorHelper v1.5+ que contém a seção "PARADA PARA TESTES DE INTEGRAÇÃO" relevante.)*
