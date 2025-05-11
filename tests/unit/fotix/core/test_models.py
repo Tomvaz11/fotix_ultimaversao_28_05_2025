@@ -5,7 +5,6 @@ Este módulo contém testes para as classes FileInfo e DuplicateSet,
 verificando a criação, validação e propriedades dessas classes.
 """
 
-import os
 from datetime import datetime
 from pathlib import Path
 import pytest
@@ -39,6 +38,9 @@ class TestFileInfo:
         # Arrange
         now = datetime.now().timestamp()
 
+        def mock_content_provider():
+            yield b"conteudo do arquivo"
+
         # Act
         file_info = FileInfo(
             path=Path("/test/file.txt"),
@@ -48,6 +50,8 @@ class TestFileInfo:
             modification_time=now,
             in_zip=True,
             zip_path=Path("/test/archive.zip"),
+            internal_path="arquivo.txt",
+            content_provider=mock_content_provider,
             original_path=Path("/original/file.txt")
         )
 
@@ -59,7 +63,13 @@ class TestFileInfo:
         assert file_info.modification_time == now
         assert file_info.in_zip is True
         assert file_info.zip_path == Path("/test/archive.zip")
+        assert file_info.internal_path == "arquivo.txt"
+        assert file_info.content_provider is mock_content_provider
         assert file_info.original_path == Path("/original/file.txt")
+
+        # Verificar se o content_provider funciona
+        content = next(file_info.content_provider())
+        assert content == b"conteudo do arquivo"
 
     def test_post_init_conversion(self):
         """Testa a conversão de strings para Path no __post_init__."""
