@@ -8,11 +8,62 @@ de abstrações em vez de implementações concretas, facilitando testes e manut
 """
 
 from pathlib import Path
-from typing import Callable, Iterable, Optional, Protocol, TypeVar, Union, Any, Tuple, List
+from typing import Callable, Iterable, Optional, Protocol, TypeVar, Tuple, List
+from concurrent.futures import Future
 
 # Tipo genérico para resultados de operações paralelas
 T = TypeVar('T')
 R = TypeVar('R')
+
+
+class IConcurrencyService(Protocol):
+    """
+    Interface para abstrair a execução de tarefas concorrentes/paralelas.
+
+    Esta interface define métodos para executar tarefas em paralelo e em background,
+    utilizando threads ou processos. Implementações concretas devem gerenciar o pool
+    de workers e lidar com os detalhes específicos da biblioteca de concorrência.
+    """
+
+    def run_parallel(self, tasks: Iterable[Callable[[], T]]) -> Iterable[T]:
+        """
+        Executa uma coleção de funções (tasks) em paralelo e retorna os resultados.
+
+        Args:
+            tasks: Coleção de funções sem argumentos que retornam um resultado.
+                  Cada função deve ser independente e thread-safe.
+
+        Returns:
+            Iterable[T]: Os resultados das funções, na mesma ordem das tasks fornecidas.
+
+        Note:
+            Esta implementação gerencia internamente o pool de workers e o número
+            máximo de threads/processos concorrentes, com base nas configurações
+            e recursos do sistema.
+        """
+        ...
+
+    def submit_background_task(self, task: Callable[..., R], *args, **kwargs) -> Future[R]:
+        """
+        Submete uma tarefa para execução em background e retorna um objeto Future.
+
+        Args:
+            task: Função a ser executada em background.
+            *args: Argumentos posicionais para a função.
+            **kwargs: Argumentos nomeados para a função.
+
+        Returns:
+            Future[R]: Objeto Future que representa a execução da tarefa.
+                      Pode ser usado para verificar o status, obter o resultado
+                      ou cancelar a execução.
+
+        Note:
+            O objeto Future retornado é da biblioteca concurrent.futures.
+            Para obter o resultado, use future.result(), que bloqueará até
+            a tarefa ser concluída. Para verificar se a tarefa foi concluída
+            sem bloquear, use future.done().
+        """
+        ...
 
 
 class IFileSystemService(Protocol):
