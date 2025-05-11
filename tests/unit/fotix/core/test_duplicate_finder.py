@@ -8,6 +8,7 @@ de detecção de duplicatas (DuplicateFinderService).
 import os
 from pathlib import Path
 from typing import Dict, List, Callable, Iterable, Optional, Tuple
+from unittest import mock
 from unittest.mock import MagicMock, patch, call
 
 import pytest
@@ -96,6 +97,38 @@ class TestDuplicateFinderService:
             assert isinstance(result, list)
             assert len(result) == 0  # Um único arquivo não pode ser duplicata
 
+    def test_find_duplicates_with_zip_file(self, duplicate_finder_service, mock_file_system_service, mock_zip_handler_service):
+        """Testa a busca de duplicatas em um arquivo ZIP."""
+        # Arrange
+        zip_path = Path("/test/archive.zip")
+        scan_paths = [zip_path]
+
+        # Configurar mocks
+        mock_file_system_service.get_file_size.return_value = 1024
+        mock_file_system_service.get_creation_time.return_value = 1600000000.0
+        mock_file_system_service.get_modification_time.return_value = 1600000000.0
+
+        # Configurar conteúdo do ZIP
+        def mock_content_provider():
+            yield b"conteudo1"
+
+        mock_zip_handler_service.stream_zip_entries.return_value = [
+            ("file1.txt", 1024, mock_content_provider),
+            ("file2.txt", 1024, mock_content_provider),  # Mesmo conteúdo que file1
+        ]
+
+        # Patch os métodos is_dir, is_file e suffix
+        with patch.object(Path, 'is_dir', return_value=False), \
+             patch.object(Path, 'is_file', return_value=True), \
+             patch.object(Path, 'suffix', new_callable=mock.PropertyMock, return_value='.zip'):
+
+            # Act
+            result = duplicate_finder_service.find_duplicates(scan_paths, include_zips=True)
+
+            # Assert
+            assert len(result) == 1  # Um conjunto de duplicatas
+            assert len(result[0].files) == 2  # Dois arquivos no conjunto
+
     def test_find_duplicates_requires_zip_handler_when_include_zips_true(self, mock_file_system_service):
         """Testa que um erro é levantado quando include_zips=True mas zip_handler_service não foi fornecido."""
         # Arrange
@@ -148,6 +181,43 @@ class TestDuplicateFinderService:
         assert len(result[0].files) == 2
         assert {file.path for file in result[0].files} == {Path("/test/file1.txt"), Path("/test/file2.txt")}
         assert result[0].hash is not None
+
+    def test_find_duplicates_with_hash_calculation_error(self, duplicate_finder_service, mock_file_system_service):
+        """Testa a busca de duplicatas quando ocorre um erro ao calcular o hash."""
+        # Arrange
+        scan_paths = [Path("/test")]
+
+        # Configurar o mock para retornar uma lista de arquivos
+        file_paths = [Path("/test/file1.txt"), Path("/test/file2.txt"), Path("/test/error.txt")]
+        mock_file_system_service.list_directory_contents.return_value = file_paths
+
+        # Configurar tamanhos de arquivo (todos com o mesmo tamanho para forçar cálculo de hash)
+        mock_file_system_service.get_file_size.return_value = 1024
+
+        # Configurar timestamps
+        mock_file_system_service.get_creation_time.return_value = 1600000000.0
+        mock_file_system_service.get_modification_time.return_value = 1600000000.0
+
+        # Configurar conteúdo dos arquivos para cálculo de hash
+        def mock_stream_content(path, chunk_size=None):
+            if path == Path("/test/error.txt"):
+                raise Exception("Erro simulado ao ler arquivo")
+            content_map = {
+                Path("/test/file1.txt"): b"conteudo igual",
+                Path("/test/file2.txt"): b"conteudo igual"
+            }
+            yield content_map.get(path, b"")
+
+        mock_file_system_service.stream_file_content.side_effect = mock_stream_content
+
+        # Act
+        result = duplicate_finder_service.find_duplicates(scan_paths, include_zips=False)
+
+        # Assert
+        assert len(result) == 1  # Um conjunto de duplicatas (file1 e file2)
+        assert len(result[0].files) == 2
+        assert {file.path for file in result[0].files} == {Path("/test/file1.txt"), Path("/test/file2.txt")}
+        # O arquivo com erro deve ser ignorado
 
     def test_find_duplicates_with_zip(self, duplicate_finder_service, mock_file_system_service, mock_zip_handler_service):
         """Testa a busca de duplicatas incluindo arquivos em ZIPs."""
@@ -210,6 +280,44 @@ class TestDuplicateFinderService:
 
         # Assert
         assert mock_callback.call_count > 0  # O callback deve ser chamado pelo menos uma vez
+
+    def test_find_duplicates_with_progress_callback_and_duplicates(self, duplicate_finder_service, mock_file_system_service):
+        """Testa que o callback de progresso é chamado durante a busca de duplicatas com arquivos duplicados."""
+        # Arrange
+        scan_paths = [Path("/test")]
+        mock_callback = MagicMock()
+
+        # Configurar arquivos com mesmo tamanho e hash
+        file_paths = [Path("/test/file1.txt"), Path("/test/file2.txt")]
+        mock_file_system_service.list_directory_contents.return_value = file_paths
+
+        # Configurar tamanhos iguais
+        mock_file_system_service.get_file_size.return_value = 1024
+
+        # Configurar timestamps
+        mock_file_system_service.get_creation_time.return_value = 1600000000.0
+        mock_file_system_service.get_modification_time.return_value = 1600000000.0
+
+        # Configurar conteúdo para hash
+        mock_file_system_service.stream_file_content.return_value = [b"conteudo igual"]
+
+        # Act
+        with patch('blake3.blake3') as mock_blake3:
+            mock_hasher = MagicMock()
+            mock_hasher.hexdigest.return_value = "abc123"
+            mock_blake3.return_value = mock_hasher
+
+            result = duplicate_finder_service.find_duplicates(
+                scan_paths, include_zips=False, progress_callback=mock_callback
+            )
+
+        # Assert
+        assert len(result) == 1  # Um conjunto de duplicatas
+        assert mock_callback.call_count > 1  # Chamado múltiplas vezes
+        # Verificar se foi chamado com valores entre 0 e 1
+        for call_args in mock_callback.call_args_list:
+            progress = call_args[0][0]
+            assert 0 <= progress <= 1
 
     def test_group_files_by_size(self, duplicate_finder_service):
         """Testa o agrupamento de arquivos por tamanho."""
@@ -311,6 +419,18 @@ class TestDuplicateFinderService:
 
         # Act & Assert
         with pytest.raises(ValueError, match="Arquivo ZIP sem content_provider"):
+            duplicate_finder_service._calculate_file_hash(file_info)
+
+    def test_calculate_file_hash_with_exception(self, duplicate_finder_service, mock_file_system_service):
+        """Testa o tratamento de exceção durante o cálculo de hash."""
+        # Arrange
+        file_info = FileInfo(path=Path("/test/file.txt"), size=1024, hash=None, in_zip=False)
+
+        # Configurar exceção ao ler o arquivo
+        mock_file_system_service.stream_file_content.side_effect = Exception("Erro simulado")
+
+        # Act & Assert
+        with pytest.raises(Exception):
             duplicate_finder_service._calculate_file_hash(file_info)
 
     def test_process_directory(self, duplicate_finder_service, mock_file_system_service):
@@ -452,3 +572,16 @@ class TestDuplicateFinderService:
         # Assert
         assert len(result) == 1  # Apenas o arquivo grande deve ser incluído
         assert result[0].internal_path == "large.txt"
+
+    def test_process_zip_without_zip_handler(self, mock_file_system_service):
+        """Testa o processamento de ZIP quando zip_handler_service é None."""
+        # Arrange
+        file_system_service = mock_file_system_service
+        duplicate_finder = DuplicateFinderService(file_system_service, zip_handler_service=None)
+        zip_path = Path("/test/archive.zip")
+
+        # Act
+        result = duplicate_finder._process_zip(zip_path)
+
+        # Assert
+        assert result == []  # Deve retornar lista vazia
