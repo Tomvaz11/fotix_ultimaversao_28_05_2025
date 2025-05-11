@@ -1,10 +1,10 @@
-# AGV Prompt Template: ImplementadorMestre v2.2 - Implementação Autônoma Guiada com Auto-Revisão
+# AGV Prompt Template: ImplementadorMestre v2.4 - Implementação Autônoma Guiada com Auto-Revisão
 
 **Tarefa Principal:** Implementar ou modificar o componente lógico alvo especificado abaixo, utilizando o Blueprint Arquitetural como guia, **com foco estrito no escopo da tarefa atual**. Criar ou modificar autonomamente os módulos base necessários (models, utils, config, interfaces) **apenas se forem estritamente necessários para suportar o componente alvo**. Gerar testes unitários OBRIGATÓRIOS para TODO código novo ou modificado (tanto no módulo principal quanto nos módulos base/utils criados/modificados nesta tarefa). Interagir com o Coordenador via "Propor e Confirmar" apenas para ambiguidades na lógica principal do alvo ou para confirmar o plano de implementação inicial (se solicitado).
 
 **Contexto Essencial (Fornecido pelo Coordenador):**
 
-1.  **Funcionalidade/Componente Alvo Principal:** `fotix.infrastructure.file_system`
+1.  **Funcionalidade/Componente Alvo Principal:** `fotix.infrastructure.zip_handler`
 2.  **Blueprint Arquitetural:** `@Output_BluePrint_Arquitetural_Tocrisna_v3.md` *(Instrução para Coordenador: Anexar o blueprint validado para o projeto atual. A IA inferirá o nome raiz do pacote (ex: 'meu_projeto') a partir dos caminhos e da estrutura definidos neste blueprint.)*
 3.  **Ordem e Descrições Iniciais:** `@Output_Ordem_Para_Implementacao_Geral.md` *(Instrução para Coordenador: Anexar o output validado do OrchestratorHelper v1.4 ou superior, adaptado para o projeto atual)*
 4.  **Contexto Adicional do Workspace:** *(Instrução para Coordenador: Anexar arquivos .py relevantes já implementados de dependências diretas E os arquivos dos módulos base - como `[nome_do_pacote_inferido]/models.py`, `[nome_do_pacote_inferido]/utils/helpers.py`, etc. - se já existirem e forem relevantes para o alvo)*
@@ -25,17 +25,25 @@
     *   **NÃO DEFINA interfaces, classes, funções ou qualquer código para outros Módulos Principais** que não sejam o alvo desta tarefa, mesmo que eles sejam mencionados como dependências futuras no Blueprint. A criação desses outros componentes ocorrerá em suas próprias tarefas dedicadas.
     *   Se o alvo requer uma *interface* que será implementada por um módulo futuro, você pode definir essa interface no arquivo `interfaces.py` apropriado, mas não implemente a classe concreta desse módulo futuro.
 
-4.  **Confirmar Aderência Estrita à Stack Tecnológica Definida:**
-    *   Revalide as bibliotecas principais e tecnologias especificadas no "Blueprint Arquitetural" e no "Contexto Essencial" (especialmente em "Stack Tecnológica Definida", se detalhado lá).
-    *   Você **DEVE** utilizar estas bibliotecas e tecnologias definidas para implementar as funcionalidades do "Componente Alvo Principal".
-    *   **Em hipótese alguma, substitua autonomamente bibliotecas da stack principal ou introduza novas bibliotecas sem aprovação explícita.**
-    *   Se, durante a análise ou planejamento, você encontrar dificuldades extremas com uma biblioteca definida e acreditar que uma alternativa seria indispensável ou drasticamente superior:
-        1.  **Pare** a implementação.
-        2.  **Apresente claramente o problema** ao Coordenador.
-        3.  **Sugira a alternativa** e justifique seus benefícios em relação à biblioteca definida.
-        4.  **Aguarde APROVAÇÃO EXPLÍCITA** do Coordenador antes de prosseguir com qualquer implementação usando a biblioteca alternativa.
-    *   IMPORANTE: Esta diretriz é crucial para manter a consistência e o controle arquitetural do projeto.
-
+4.  **CONFORMIDADE TOTAL, INEGOCIÁVEL E SEM FALLBACKS COM A STACK TECNOLÓGICA DESIGNADA:**
+    *   **VERIFICAÇÃO E USO EXCLUSIVO E ÚNICO:** Identifique no Blueprint Arquitetural a tecnologia **EXATAMENTE DESIGNADA** para o "Componente Alvo Principal". Você **SÓ PODE USAR ESTA TECNOLOGIA DESIGNADA. QUALQUER OUTRA ESTÁ ABSOLUTAMENTE PROIBIDA.** Se o Blueprint diz "usar Biblioteca X para a funcionalidade Y", você usa a Biblioteca X para a funcionalidade Y. Nenhuma outra biblioteca, nem mesmo bibliotecas padrão do Python, pode ser usada como alternativa ou *fallback* para essa funcionalidade, a menos que explicitamente instruído pelo Coordenador para esta tarefa.
+    *   **PROIBIÇÃO TOTAL DE SUBSTITUIÇÃO, COMPLEMENTAÇÃO OU FALLBACK AUTÔNOMO:** É **ABSOLUTAMENTE PROIBIDO** você substituir, complementar com outra biblioteca para a mesma finalidade, ou implementar qualquer tipo de mecanismo de **fallback para uma biblioteca alternativa** se a tecnologia designada apresentar dificuldades. Sua única responsabilidade é fazer a tecnologia designada funcionar ou seguir o protocolo de bloqueio.
+    *   **RESOLUÇÃO DE PROBLEMAS DENTRO DA STACK DESIGNADA (COM CONSULTA À DOCUMENTAÇÃO FORNECIDA):**
+        *   Se você encontrar erros, dificuldades ou comportamentos inesperados ao utilizar a tecnologia designada:
+            1.  **Análise Inicial:** Reanalise minuciosamente seu próprio código em busca de erros de implementação, lógica incorreta ou uso inadequado da API da tecnologia designada, comparando com o erro exato apresentado.
+            2.  **CONSULTA OBRIGATÓRIA À DOCUMENTAÇÃO NA CODEBASE/CONTEXTO:** **VOCÊ DEVE buscar e consultar qualquer documentação, exemplos de uso, ou arquivos de interface (`.pyi`, etc.) relacionados à tecnologia designada que tenham sido fornecidos pelo Coordenador como parte do contexto desta tarefa (ex: em arquivos anexados, ou em um diretório `docs/libs_especificas/` dentro da codebase do projeto).** O objetivo é encontrar a causa raiz do erro e a forma correta de utilizar a API da biblioteca com base nas informações fornecidas.
+            3.  **Correção Baseada na Documentação Fornecida:** Aplique o conhecimento adquirido da documentação fornecida para corrigir seu código.
+            4.  **Iteração com Base na Documentação Fornecida:** Se a correção não funcionar ou um novo erro relacionado à biblioteca designada surgir, **REPITA o passo 2 (Consulta Obrigatória à Documentação na Codebase/Contexto)** e o passo 3 (Correção Baseada na Documentação Fornecida).
+        *   **Múltiplas Tentativas com Suporte da Documentação Fornecida Exigidas:** Espera-se que você realize **várias tentativas significativas e documentadas** de depuração e correção, utilizando ativamente a documentação fornecida como principal ferramenta de resolução para problemas com a tecnologia designada.
+    *   **PROTOCOLO DE BLOQUEIO TÉCNICO (SE DOCUMENTAÇÃO AUSENTE OU INSUFICIENTE):**
+        1.  **Passo Inicial:** Se, durante a "CONSULTA OBRIGATÓRIA À DOCUMENTAÇÃO NA CODEBASE/CONTEXTO" (item 2 da seção anterior), você **não encontrar documentação ou exemplos relevantes para a tecnologia designada que te permitam resolver o problema atual**, OU se, após aplicar as informações da documentação fornecida, o problema persistir de forma insuperável:
+            a.  **INTERROMPER IMEDIATAMENTE A IMPLEMENTAÇÃO.**
+            b.  **NÃO IMPLEMENTE NADA COM OUTRA TECNOLOGIA, NEM COMO FALLBACK.**
+            c.  **COMUNICAR AO COORDENADOR: "ALERTA DE DOCUMENTAÇÃO NECESSÁRIA/INSUFICIENTE: Não foi possível prosseguir com a tecnologia [Nome da Tecnologia Designada] para o componente [Nome do Componente Alvo] devido à ausência (ou insuficiência) de documentação/exemplos fornecidos na codebase para resolver o erro/dificuldade [Descrição concisa do erro/dificuldade]. Por favor, forneça a documentação/exemplos necessários ou novas instruções."**
+            d.  Aguarde a decisão e/ou a documentação do Coordenador.
+        2.  **Passo Secundário (IMPOSSIBILIDADE TÉCNICA MESMO COM DOCUMENTAÇÃO):** Se, e **somente se**, mesmo após o Coordenador fornecer documentação/exemplos e você realizar múltiplas e exaustivas tentativas de usá-los, você estiver **ABSOLUTAMENTE CONVICTO E PUDER DEMONSTRAR TECNICAMENTE** que é impossível cumprir o requisito com a tecnologia designada (devido a um bug confirmado e não contornável na biblioteca, ou uma limitação fundamental documentada), você DEVE seguir o procedimento de BLOQUEIO TÉCNICO já descrito na versão anterior (parar, não usar outra tecnologia, comunicar o bloqueio técnico detalhado, não sugerir alternativas, aguardar instruções).
+    *   **FALHA AUTOMÁTICA POR DESVIO OU FALLBACK NÃO AUTORIZADO:** Se você apresentar uma solução que utilize qualquer tecnologia diferente da designada, **ou que implemente um fallback para uma tecnologia diferente da designada sem autorização explícita do Coordenador para esta tarefa específica**, sua resposta será considerada uma **FALHA COMPLETA**.
+        
 5.  **Gerar Plano de Implementação Detalhado Inicial:**
     *   Antes de iniciar qualquer codificação, formule um plano de ação detalhado para implementar o "Componente Alvo Principal".
     *   Este plano deve listar:

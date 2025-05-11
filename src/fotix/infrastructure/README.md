@@ -71,6 +71,50 @@ fs_service.copy_file(Path("origem.txt"), Path("destino.txt"))
 fs_service.move_to_trash(Path("arquivo_indesejado.txt"))
 ```
 
+### `zip_handler.py`
+
+O módulo `zip_handler.py` implementa a interface `IZipHandlerService` para manipulação eficiente de arquivos ZIP. Ele utiliza a biblioteca `stream-unzip` para processar arquivos ZIP em streaming, sem extrair todo o conteúdo para o disco ou memória de uma vez.
+
+#### Funcionalidades
+
+- **Streaming de arquivos ZIP**: Acesso eficiente ao conteúdo de arquivos ZIP grandes, processando apenas o necessário.
+- **Filtragem por extensão**: Capacidade de filtrar arquivos dentro do ZIP por extensão.
+- **Acesso lazy ao conteúdo**: O conteúdo de cada arquivo é acessado apenas quando necessário, economizando memória.
+- **Tratamento robusto de erros**: Lida com diversos tipos de erros que podem ocorrer durante o processamento.
+
+#### Uso Básico
+
+```python
+from pathlib import Path
+from fotix.infrastructure.zip_handler import ZipHandlerService
+
+# Criar uma instância do serviço
+zip_service = ZipHandlerService()
+
+# Processar um arquivo ZIP, filtrando apenas imagens
+zip_path = Path("caminho/para/arquivo.zip")
+for file_name, file_size, content_fn in zip_service.stream_zip_entries(zip_path, file_extensions=['.jpg', '.png']):
+    print(f"Arquivo: {file_name}, Tamanho: {file_size} bytes")
+
+    # Processar o conteúdo do arquivo
+    content_chunks = list(content_fn())
+    content = b''.join(content_chunks)
+
+    # Fazer algo com o conteúdo...
+    # Por exemplo, salvar em um novo arquivo:
+    # with open(f"output/{file_name}", "wb") as f:
+    #     f.write(content)
+```
+
+#### Tratamento de Erros
+
+O serviço lida com vários tipos de erros que podem ocorrer durante o processamento de arquivos ZIP:
+
+- `FileNotFoundError`: Se o arquivo ZIP não existir.
+- `PermissionError`: Se não houver permissão para ler o arquivo ZIP.
+- `ValueError`: Se o arquivo não for um ZIP válido.
+- `NotStreamUnzippable`: Se o arquivo ZIP não puder ser processado em streaming.
+
 ### `logging_config.py`
 
 O módulo `logging_config.py` configura o sistema de logging padrão do Python para a aplicação Fotix, permitindo o registro de eventos e erros em diferentes níveis. Utiliza o módulo de configuração para obter parâmetros como nível de log e caminho do arquivo de log.
