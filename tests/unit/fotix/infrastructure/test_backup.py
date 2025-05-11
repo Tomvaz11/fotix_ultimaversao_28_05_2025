@@ -621,3 +621,231 @@ def test_delete_backup_metadata_error(backup_service, existing_backup, monkeypat
     # Tentar excluir backup (deve lançar IOError)
     with pytest.raises(IOError):
         backup_service.delete_backup(existing_backup)
+
+
+def test_create_backup_with_no_hash(mock_config, temp_dir):
+    """
+    Testa a criação de backup com arquivos sem hash.
+
+    Args:
+        mock_config: Configuração mockada.
+        temp_dir: Diretório temporário.
+    """
+    # Criar serviço de backup
+    backup_service = BackupService()
+
+    # Criar um arquivo de teste sem hash
+    file_path = temp_dir / "no_hash_file.txt"
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write("Arquivo sem hash")
+
+    # Criar FileInfo sem hash
+    file_info = FileInfo(
+        path=file_path,
+        size=os.path.getsize(file_path),
+        hash=None,  # Hash é None
+        creation_time=os.path.getctime(file_path),
+        modification_time=os.path.getmtime(file_path)
+    )
+
+    # Criar backup
+    backup_id = backup_service.create_backup([(file_path, file_info)])
+
+    # Verificar se o backup foi criado
+    metadata_path = backup_service.metadata_dir / f"{backup_id}.json"
+    assert metadata_path.exists()
+
+    # Verificar metadados
+    with open(metadata_path, 'r', encoding='utf-8') as f:
+        metadata = json.load(f)
+
+    # Verificar que o arquivo foi incluído no backup
+    assert len(metadata["files"]) == 1
+    assert metadata["files"][0]["hash"] is None
+
+
+def test_create_backup_cleanup_error(mock_config, test_files, monkeypatch):
+    """
+    Testa o tratamento de erros ao limpar diretório durante falha na criação de backup.
+
+    Args:
+        mock_config: Configuração mockada.
+        test_files: Arquivos de teste.
+        monkeypatch: Fixture do pytest para modificar objetos.
+    """
+    # Criar serviço de backup
+    backup_service = BackupService()
+
+    # Mock da função open para lançar exceção ao tentar salvar metadados
+    original_open = open
+
+    def mock_open(*args, **kwargs):
+        if args[0].name.endswith('.json') and 'w' in args[1]:
+            raise PermissionError("Sem permissão para escrever metadados")
+        return original_open(*args, **kwargs)
+
+    # Mock da função shutil.rmtree para lançar exceção
+    def mock_rmtree(*args, **kwargs):
+        raise PermissionError("Sem permissão para remover diretório")
+
+    # Aplicar os mocks
+    monkeypatch.setattr("builtins.open", mock_open)
+    monkeypatch.setattr("shutil.rmtree", mock_rmtree)
+
+    # Tentar criar backup (deve lançar IOError)
+    with pytest.raises(IOError):
+        backup_service.create_backup(test_files)
+
+
+def test_list_backups_glob_error(backup_service, monkeypatch):
+    """
+    Testa o tratamento de erros ao listar backups quando ocorre uma exceção.
+
+    Args:
+        backup_service: Instância do serviço de backup.
+        monkeypatch: Fixture do pytest para modificar objetos.
+    """
+    # Mock do método glob para lançar exceção
+    original_glob = Path.glob
+
+    def mock_glob(self, pattern):
+        raise Exception("Erro ao listar arquivos")
+
+    # Aplicar o mock
+    monkeypatch.setattr(Path, "glob", mock_glob)
+
+    # Listar backups (deve retornar lista vazia em caso de erro)
+    backups = backup_service.list_backups()
+
+    # Verificar que retornou uma lista vazia
+    assert backups == []
+
+
+def test_restore_backup_missing_files_dir(backup_service, existing_backup):
+    """
+    Testa a restauração de um backup com diretório de arquivos ausente.
+
+    Args:
+        backup_service: Instância do serviço de backup.
+        existing_backup: ID de um backup existente.
+    """
+    # Remover o diretório de arquivos do backup
+    backup_files_dir = backup_service.files_dir / existing_backup
+    shutil.rmtree(backup_files_dir)
+
+    # Verificar que o diretório não existe mais
+    assert not backup_files_dir.exists()
+
+    # Tentar restaurar o backup (deve lançar ValueError)
+    with pytest.raises(ValueError):
+        backup_service.restore_backup(existing_backup)
+
+
+def test_restore_backup_missing_backup_filename(mock_config):
+    """
+    Testa a restauração de um backup com metadados sem nome de arquivo.
+
+    Args:
+        mock_config: Configuração mockada.
+    """
+    # Criar serviço de backup
+    backup_service = BackupService()
+
+    # Criar um ID de backup com metadados incompletos
+    backup_id = "missing_filename"
+    metadata_path = backup_service.metadata_dir / f"{backup_id}.json"
+    backup_files_dir = backup_service.files_dir / backup_id
+
+    # Criar diretório de backup
+    backup_files_dir.mkdir(parents=True, exist_ok=True)
+
+    # Criar arquivo de metadados sem backup_filename
+    metadata = {
+        "id": backup_id,
+        "date": datetime.now().isoformat(),
+        "files": [
+            {
+                "original_path": str(Path.home() / "test.txt"),
+                "size": 100,
+                # Sem backup_filename
+            }
+        ]
+    }
+
+    with open(metadata_path, 'w', encoding='utf-8') as f:
+        json.dump(metadata, f)
+
+    # Criar diretório de restauração manualmente
+    restore_dir = backup_service.backup_dir / "restore_missing_filename"
+    restore_dir.mkdir(parents=True, exist_ok=True)
+
+    # Restaurar backup (deve pular o arquivo sem backup_filename)
+    backup_service.restore_backup(backup_id, restore_dir)
+
+    # Verificar que o log foi gerado (não podemos verificar diretamente o comportamento)
+    # O teste passa se não houver exceção
+
+
+def test_restore_backup_file_not_found(backup_service, existing_backup, temp_dir, monkeypatch):
+    """
+    Testa o tratamento de erros quando um arquivo não é encontrado durante a restauração.
+
+    Args:
+        backup_service: Instância do serviço de backup.
+        existing_backup: ID de um backup existente.
+        temp_dir: Diretório temporário.
+        monkeypatch: Fixture do pytest para modificar objetos.
+    """
+    # Mock da função shutil.copy2 para lançar FileNotFoundError
+    def mock_copy2(src, dst, *args, **kwargs):
+        raise FileNotFoundError(f"Arquivo não encontrado: {src}")
+
+    # Aplicar o mock
+    monkeypatch.setattr("shutil.copy2", mock_copy2)
+
+    # Tentar restaurar backup (deve lançar FileNotFoundError)
+    with pytest.raises(FileNotFoundError):
+        backup_service.restore_backup(existing_backup, temp_dir / "restore_error")
+
+
+def test_restore_backup_unexpected_error(backup_service, existing_backup, temp_dir, monkeypatch):
+    """
+    Testa o tratamento de erros inesperados durante a restauração.
+
+    Args:
+        backup_service: Instância do serviço de backup.
+        existing_backup: ID de um backup existente.
+        temp_dir: Diretório temporário.
+        monkeypatch: Fixture do pytest para modificar objetos.
+    """
+    # Mock da função shutil.copy2 para lançar uma exceção inesperada
+    def mock_copy2(src, dst, *args, **kwargs):
+        raise RuntimeError("Erro inesperado durante a cópia")
+
+    # Aplicar o mock
+    monkeypatch.setattr("shutil.copy2", mock_copy2)
+
+    # Tentar restaurar backup (deve lançar IOError)
+    with pytest.raises(IOError):
+        backup_service.restore_backup(existing_backup, temp_dir / "restore_error")
+
+
+def test_delete_backup_rmtree_error(backup_service, existing_backup, monkeypatch):
+    """
+    Testa o tratamento de erros ao remover diretório durante a exclusão de backup.
+
+    Args:
+        backup_service: Instância do serviço de backup.
+        existing_backup: ID de um backup existente.
+        monkeypatch: Fixture do pytest para modificar objetos.
+    """
+    # Mock da função shutil.rmtree para lançar exceção
+    def mock_rmtree(*args, **kwargs):
+        raise PermissionError("Sem permissão para remover diretório")
+
+    # Aplicar o mock
+    monkeypatch.setattr("shutil.rmtree", mock_rmtree)
+
+    # Tentar excluir backup (deve lançar IOError)
+    with pytest.raises(IOError):
+        backup_service.delete_backup(existing_backup)
