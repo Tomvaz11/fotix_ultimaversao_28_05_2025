@@ -8,8 +8,12 @@ de abstrações em vez de implementações concretas, facilitando testes e manut
 """
 
 from pathlib import Path
-from typing import Callable, Iterable, Optional, Protocol, TypeVar, Tuple, List
+from typing import Any, Callable, Dict, Iterable, Optional, Protocol, TypeVar, Tuple, List
 from concurrent.futures import Future
+
+# Importação com aspas simples para evitar importação circular
+# FileInfo será usado apenas para anotação de tipo
+from fotix.core.models import FileInfo
 
 # Tipo genérico para resultados de operações paralelas
 T = TypeVar('T')
@@ -290,5 +294,96 @@ class IZipHandlerService(Protocol):
 
             A função lazy retornada deve ser iterada até o final para cada arquivo
             antes de passar para o próximo, ou uma exceção pode ser levantada.
+        """
+        ...
+
+
+class IBackupService(Protocol):
+    """
+    Interface para abstrair as operações de backup e restauração.
+
+    Esta interface define métodos para criar, listar, restaurar e excluir backups
+    de arquivos. Implementações concretas devem lidar com os detalhes específicos
+    de armazenamento e gerenciamento de metadados dos backups.
+    """
+
+    def create_backup(self, files_to_backup: Iterable[Tuple[Path, FileInfo]]) -> str:
+        """
+        Cria um backup dos arquivos fornecidos.
+
+        Args:
+            files_to_backup: Coleção de tuplas contendo o caminho do arquivo e seu FileInfo.
+                            O FileInfo contém metadados importantes como hash, tamanho, etc.
+
+        Returns:
+            str: ID único para o backup realizado.
+
+        Raises:
+            FileNotFoundError: Se algum dos arquivos não existir.
+            PermissionError: Se não houver permissão para ler os arquivos ou escrever no destino.
+            IOError: Para outros erros relacionados a IO.
+
+        Note:
+            Esta operação copia os arquivos para uma área segura (configurada via fotix.config)
+            e armazena metadados sobre o backup (data, arquivos, hashes, caminhos originais).
+            O ID retornado pode ser usado posteriormente para restaurar ou excluir o backup.
+        """
+        ...
+
+    def list_backups(self) -> List[Dict[str, Any]]:
+        """
+        Retorna uma lista de informações sobre os backups disponíveis.
+
+        Returns:
+            List[Dict[str, Any]]: Lista de dicionários, cada um contendo informações
+                                 sobre um backup, como:
+                                 - 'id': ID único do backup (str)
+                                 - 'date': Data/hora do backup (datetime)
+                                 - 'file_count': Número de arquivos no backup (int)
+                                 - 'total_size': Tamanho total em bytes (int)
+                                 - 'description': Descrição opcional (str)
+
+        Note:
+            Esta operação não acessa os arquivos de backup em si, apenas os metadados.
+        """
+        ...
+
+    def restore_backup(self, backup_id: str, target_directory: Optional[Path] = None) -> None:
+        """
+        Restaura os arquivos de um backup específico.
+
+        Args:
+            backup_id: ID do backup a ser restaurado.
+            target_directory: Diretório alvo para restauração. Se None, os arquivos
+                             são restaurados em seus locais originais.
+
+        Raises:
+            ValueError: Se o backup_id for inválido ou não existir.
+            FileExistsError: Se algum arquivo de destino já existir e não puder ser sobrescrito.
+            PermissionError: Se não houver permissão para escrever nos destinos.
+            IOError: Para outros erros relacionados a IO.
+
+        Note:
+            Se target_directory for fornecido, todos os arquivos são restaurados
+            nesse diretório, preservando apenas os nomes dos arquivos (não a estrutura
+            de diretórios original). Se for None, a estrutura original é recriada.
+        """
+        ...
+
+    def delete_backup(self, backup_id: str) -> None:
+        """
+        Remove um backup específico.
+
+        Args:
+            backup_id: ID do backup a ser removido.
+
+        Raises:
+            ValueError: Se o backup_id for inválido ou não existir.
+            PermissionError: Se não houver permissão para excluir os arquivos.
+            IOError: Para outros erros relacionados a IO.
+
+        Note:
+            Esta operação remove tanto os arquivos de backup quanto os metadados associados.
+            Após a exclusão, o backup não poderá mais ser restaurado.
         """
         ...

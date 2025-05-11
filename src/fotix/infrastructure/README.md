@@ -120,6 +120,60 @@ result = future.result()  # 20
 - Use **processos** (`use_processes=True`) para tarefas **CPU-bound** (cálculos intensivos, processamento de imagens).
 - Lembre-se de chamar `shutdown()` quando terminar de usar o serviço para liberar recursos.
 
+### `backup.py`
+
+O módulo `backup.py` implementa a interface `IBackupService`, fornecendo métodos para criar, listar, restaurar e excluir backups de arquivos. Utiliza um sistema de armazenamento baseado em arquivos, com metadados em JSON.
+
+#### Funcionalidades
+
+- **Criação de backups**: Copia arquivos para uma área segura e gera IDs únicos para cada backup.
+- **Armazenamento de metadados**: Salva informações como caminhos originais, hashes e timestamps.
+- **Listagem de backups**: Fornece informações sobre backups disponíveis (data, número de arquivos, tamanho).
+- **Restauração seletiva**: Permite restaurar arquivos para seus locais originais ou para um diretório específico.
+- **Exclusão segura**: Remove backups e seus metadados de forma controlada.
+- **Tratamento robusto de erros**: Lida com diversos tipos de erros durante as operações.
+
+#### Uso Básico
+
+```python
+from fotix.infrastructure.backup import BackupService
+from fotix.infrastructure.file_system import FileSystemService
+from fotix.core.models import FileInfo
+from pathlib import Path
+
+# Criar instâncias dos serviços
+fs_service = FileSystemService()
+backup_service = BackupService(file_system_service=fs_service)
+
+# Preparar arquivos para backup
+files_to_backup = []
+for file_path in fs_service.list_directory_contents(Path("/caminho/para/diretorio")):
+    # Criar FileInfo para o arquivo
+    file_info = FileInfo(
+        path=file_path,
+        size=fs_service.get_file_size(file_path),
+        hash="hash_do_arquivo",  # Normalmente calculado pelo DuplicateFinder
+        creation_time=fs_service.get_creation_time(file_path),
+        modification_time=fs_service.get_modification_time(file_path)
+    )
+    files_to_backup.append((file_path, file_info))
+
+# Criar backup
+backup_id = backup_service.create_backup(files_to_backup)
+print(f"Backup criado com ID: {backup_id}")
+
+# Listar backups disponíveis
+backups = backup_service.list_backups()
+for backup in backups:
+    print(f"Backup {backup['id']} criado em {backup['date']}, {backup['file_count']} arquivos")
+
+# Restaurar backup para um diretório específico
+backup_service.restore_backup(backup_id, Path("/caminho/para/restauracao"))
+
+# Excluir backup
+backup_service.delete_backup(backup_id)
+```
+
 ### `zip_handler.py`
 
 O módulo `zip_handler.py` implementa a interface `IZipHandlerService` para manipulação eficiente de arquivos ZIP. Ele utiliza a biblioteca `stream-unzip` para processar arquivos ZIP em streaming, sem extrair todo o conteúdo para o disco ou memória de uma vez.
