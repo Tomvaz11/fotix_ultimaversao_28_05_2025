@@ -71,6 +71,55 @@ fs_service.copy_file(Path("origem.txt"), Path("destino.txt"))
 fs_service.move_to_trash(Path("arquivo_indesejado.txt"))
 ```
 
+### `concurrency.py`
+
+O módulo `concurrency.py` implementa a interface `IConcurrencyService`, fornecendo métodos para executar tarefas em paralelo e em background, utilizando a biblioteca `concurrent.futures` do Python.
+
+#### Funcionalidades
+
+- **Execução paralela de tarefas**: Permite executar múltiplas funções simultaneamente, aproveitando múltiplos núcleos de CPU ou threads.
+- **Tarefas em background**: Permite submeter tarefas para execução em segundo plano e monitorar seu progresso.
+- **Configuração automática**: Determina automaticamente o número ideal de workers com base nos recursos do sistema ou nas configurações fornecidas.
+- **Suporte a threads e processos**: Permite escolher entre `ThreadPoolExecutor` (para tarefas IO-bound) e `ProcessPoolExecutor` (para tarefas CPU-bound).
+- **Gerenciamento de recursos**: Libera automaticamente os recursos quando não são mais necessários.
+
+#### Uso Básico
+
+```python
+from fotix.infrastructure.concurrency import ConcurrencyService
+
+# Criar uma instância do serviço
+concurrency_service = ConcurrencyService()
+
+# Definir algumas tarefas
+def task1():
+    # Alguma operação demorada
+    return "Resultado 1"
+
+def task2():
+    # Outra operação demorada
+    return "Resultado 2"
+
+# Executar as tarefas em paralelo
+results = concurrency_service.run_parallel([task1, task2])
+print(results)  # ["Resultado 1", "Resultado 2"]
+
+# Submeter uma tarefa para execução em background
+future = concurrency_service.submit_background_task(
+    lambda x: x * 2,
+    10
+)
+
+# Obter o resultado (bloqueia até a conclusão)
+result = future.result()  # 20
+```
+
+#### Considerações de Uso
+
+- Use **threads** (`use_processes=False`, padrão) para tarefas **IO-bound** (leitura/escrita de arquivos, rede).
+- Use **processos** (`use_processes=True`) para tarefas **CPU-bound** (cálculos intensivos, processamento de imagens).
+- Lembre-se de chamar `shutdown()` quando terminar de usar o serviço para liberar recursos.
+
 ### `zip_handler.py`
 
 O módulo `zip_handler.py` implementa a interface `IZipHandlerService` para manipulação eficiente de arquivos ZIP. Ele utiliza a biblioteca `stream-unzip` para processar arquivos ZIP em streaming, sem extrair todo o conteúdo para o disco ou memória de uma vez.
