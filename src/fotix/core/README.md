@@ -78,9 +78,45 @@ for i, duplicate_set in enumerate(duplicate_sets, 1):
         print(f"  - {file.path}")
 ```
 
-### `selection_strategy.py` (a ser implementado)
+### `selection_strategy.py`
 
-O módulo `selection_strategy.py` implementará a interface `ISelectionStrategy`, fornecendo diferentes estratégias para selecionar automaticamente qual arquivo manter de um conjunto de duplicatas, com base em critérios como data, resolução ou nome.
+O módulo `selection_strategy.py` implementa a interface `ISelectionStrategy`, fornecendo diferentes estratégias para selecionar automaticamente qual arquivo manter de um conjunto de duplicatas, com base em critérios como data, resolução ou nome.
+
+#### Estratégias Disponíveis
+
+- **CreationDateStrategy**: Seleciona o arquivo mais antigo com base na data de criação.
+- **ModificationDateStrategy**: Seleciona o arquivo mais recente com base na data de modificação.
+- **HighestResolutionStrategy**: Seleciona a imagem com a maior resolução (para arquivos de imagem).
+- **ShortestNameStrategy**: Seleciona o arquivo com o nome mais curto.
+- **CompositeStrategy**: Combina várias estratégias em ordem de prioridade.
+
+#### Uso Básico
+
+```python
+from pathlib import Path
+from fotix.core.models import DuplicateSet, FileInfo
+from fotix.core.selection_strategy import create_strategy
+from fotix.infrastructure.file_system import FileSystemService
+
+# Criar o serviço de sistema de arquivos (necessário para algumas estratégias)
+file_system_service = FileSystemService()
+
+# Criar uma estratégia de seleção
+strategy = create_strategy('highest_resolution', file_system_service)
+
+# Criar um conjunto de duplicatas
+duplicate_set = DuplicateSet(
+    files=[
+        FileInfo(path=Path("image1.jpg"), size=1024),
+        FileInfo(path=Path("image2.jpg"), size=1024)
+    ],
+    hash="abc123"
+)
+
+# Selecionar o arquivo a ser mantido
+file_to_keep = strategy.select_file_to_keep(duplicate_set)
+print(f"Arquivo a ser mantido: {file_to_keep.path}")
+```
 
 ## Dependências
 
