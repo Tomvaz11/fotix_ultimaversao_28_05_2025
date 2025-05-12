@@ -6,7 +6,7 @@ responsável por orquestrar o processo de varredura de diretórios e arquivos.
 """
 
 from pathlib import Path
-from unittest.mock import Mock, MagicMock, call, patch
+from unittest.mock import Mock, patch
 import pytest
 
 from fotix.application.services.scan_service import ScanService
@@ -68,7 +68,7 @@ class TestScanService:
         # Arrange
         directories = [Path("/test/dir1"), Path("/test/dir2")]
         include_zips = True
-        progress_callback = lambda x: None
+        progress_callback = lambda _: None
 
         # Configurar mock para simular que os diretórios são válidos
         with patch.object(Path, "is_dir", return_value=True):
@@ -125,7 +125,7 @@ class TestScanService:
         mock_file_system.path_exists.return_value = True
 
         # Configurar mock para simular que o segundo caminho não é um diretório
-        with patch.object(Path, "is_dir", side_effect=lambda: False):
+        with patch.object(Path, "is_dir", return_value=False):
             # Act & Assert
             with pytest.raises(ValueError) as excinfo:
                 scan_service._validate_directories(directories)
