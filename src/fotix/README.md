@@ -4,6 +4,36 @@ Este diretório contém os módulos principais da aplicação Fotix.
 
 ## Módulos
 
+### `main.py`
+
+O módulo `main.py` é o ponto de entrada da aplicação Fotix. Ele é responsável por inicializar as camadas da aplicação, configurar a UI principal e iniciar o loop de eventos da GUI.
+
+#### Funcionalidades
+
+- Configuração do sistema de logging
+- Inicialização da aplicação Qt
+- Criação e exibição da janela principal
+- Tratamento de erros não capturados
+
+#### Uso Básico
+
+```python
+# Executar a aplicação
+python -m fotix.main
+```
+
+#### Componentes Principais
+
+- `setup_application()`: Configura a aplicação Qt, verificando se já existe uma instância de QApplication e reutilizando-a se existir.
+- `main()`: Função principal que configura o logging, inicializa a aplicação Qt, cria a janela principal e inicia o loop de eventos.
+
+#### Dependências
+
+- `fotix.ui.main_window`: Para a janela principal da aplicação
+- `fotix.infrastructure.logging_config`: Para configuração do sistema de logging
+- `fotix.config`: Para acesso às configurações da aplicação
+- `PySide6.QtWidgets`: Para a interface gráfica
+
 ### `config.py`
 
 O módulo `config.py` é responsável por carregar e fornecer acesso às configurações da aplicação. Ele oferece:
