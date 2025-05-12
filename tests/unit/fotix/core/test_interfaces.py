@@ -12,10 +12,11 @@ import pytest
 from unittest.mock import MagicMock
 
 from fotix.core.models import DuplicateSet, FileInfo
+from fotix.core.interfaces import IDuplicateFinderService, ISelectionStrategy
 
 # Redefinir as interfaces com @runtime_checkable para testes
 @runtime_checkable
-class IDuplicateFinderService(Protocol):
+class RuntimeCheckableDuplicateFinderService(Protocol):
     """Interface para o serviço de detecção de duplicatas."""
 
     def find_duplicates(self, scan_paths: List[Path], include_zips: bool,
@@ -24,7 +25,7 @@ class IDuplicateFinderService(Protocol):
         ...
 
 @runtime_checkable
-class ISelectionStrategy(Protocol):
+class RuntimeCheckableSelectionStrategy(Protocol):
     """Interface para estratégias de seleção de arquivos duplicados."""
 
     def select_file_to_keep(self, duplicate_set: DuplicateSet) -> FileInfo:
@@ -35,7 +36,7 @@ class ISelectionStrategy(Protocol):
 class TestIDuplicateFinderService:
     """Testes para a interface IDuplicateFinderService."""
 
-    class MockDuplicateFinderService(IDuplicateFinderService):
+    class MockDuplicateFinderService:
         """Implementação concreta da interface para testes."""
 
         def find_duplicates(self, scan_paths: List[Path], include_zips: bool,
@@ -53,7 +54,9 @@ class TestIDuplicateFinderService:
         service = self.MockDuplicateFinderService()
 
         # Assert
-        assert isinstance(service, IDuplicateFinderService)
+        assert isinstance(service, RuntimeCheckableDuplicateFinderService)
+        # Verificar se a classe implementa a interface
+        assert hasattr(service, "find_duplicates")
 
     def test_find_duplicates_with_callback(self):
         """Testa se o método find_duplicates aceita e usa o callback de progresso."""
@@ -71,11 +74,23 @@ class TestIDuplicateFinderService:
         mock_callback.assert_any_call(0.5)
         mock_callback.assert_any_call(1.0)
 
+    def test_find_duplicates_without_callback(self):
+        """Testa se o método find_duplicates funciona sem callback de progresso."""
+        # Arrange
+        service = self.MockDuplicateFinderService()
+        scan_paths = [Path("/test")]
+
+        # Act
+        result = service.find_duplicates(scan_paths, include_zips=True)
+
+        # Assert
+        assert isinstance(result, list)
+
 
 class TestISelectionStrategy:
     """Testes para a interface ISelectionStrategy."""
 
-    class MockSelectionStrategy(ISelectionStrategy):
+    class MockSelectionStrategy:
         """Implementação concreta da interface para testes."""
 
         def select_file_to_keep(self, duplicate_set: DuplicateSet) -> FileInfo:
@@ -90,7 +105,9 @@ class TestISelectionStrategy:
         strategy = self.MockSelectionStrategy()
 
         # Assert
-        assert isinstance(strategy, ISelectionStrategy)
+        assert isinstance(strategy, RuntimeCheckableSelectionStrategy)
+        # Verificar se a classe implementa a interface
+        assert hasattr(strategy, "select_file_to_keep")
 
     def test_select_file_to_keep(self):
         """Testa se o método select_file_to_keep funciona corretamente."""
@@ -115,3 +132,16 @@ class TestISelectionStrategy:
         # Act & Assert
         with pytest.raises(ValueError, match="Conjunto vazio"):
             strategy.select_file_to_keep(duplicate_set)
+
+    def test_select_file_to_keep_single_file(self):
+        """Testa o comportamento com um conjunto contendo apenas um arquivo."""
+        # Arrange
+        strategy = self.MockSelectionStrategy()
+        file1 = FileInfo(path=Path("file1.txt"), size=100)
+        duplicate_set = DuplicateSet(files=[file1], hash="abc123")
+
+        # Act
+        result = strategy.select_file_to_keep(duplicate_set)
+
+        # Assert
+        assert result == file1

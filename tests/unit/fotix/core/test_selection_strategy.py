@@ -271,6 +271,26 @@ class TestHighestResolutionStrategy:
         # Assert
         assert result == file2  # Deve usar a estratégia de fallback (ModificationDateStrategy)
 
+    def test_select_with_non_image_files_no_fallback(self):
+        """Testa o comportamento quando não há arquivos de imagem e não há estratégia de fallback."""
+        # Arrange
+        mock_fs_service = MagicMock()
+        strategy = HighestResolutionStrategy(file_system_service=mock_fs_service)  # Sem fallback
+
+        # Criar arquivos que não são imagens
+        file1 = FileInfo(path=Path("doc1.txt"), size=100)
+        file2 = FileInfo(path=Path("doc2.txt"), size=100)
+
+        duplicate_set = DuplicateSet(files=[file1, file2], hash="abc123")
+
+        # Mock para is_image_file
+        with patch('fotix.core.selection_strategy.is_image_file', return_value=False):
+            # Act
+            result = strategy.select_file_to_keep(duplicate_set)
+
+        # Assert
+        assert result == file1  # Deve retornar o primeiro arquivo quando não há fallback
+
     def test_select_with_zip_image_files(self):
         """Testa o comportamento com imagens dentro de arquivos ZIP."""
         # Arrange
@@ -309,6 +329,54 @@ class TestHighestResolutionStrategy:
 
         # Assert
         assert result == file2
+
+    def test_no_resolution_determined(self):
+        """Testa o comportamento quando não é possível determinar a resolução de nenhuma imagem."""
+        # Arrange
+        mock_fs_service = MagicMock()
+        fallback_strategy = ModificationDateStrategy()
+        strategy = HighestResolutionStrategy(
+            file_system_service=mock_fs_service,
+            fallback_strategy=fallback_strategy
+        )
+
+        # Criar arquivos de imagem
+        file1 = FileInfo(path=Path("image1.jpg"), size=100, modification_time=1600000000)
+        file2 = FileInfo(path=Path("image2.jpg"), size=100, modification_time=1600001000)  # Mais recente
+
+        duplicate_set = DuplicateSet(files=[file1, file2], hash="abc123")
+
+        # Mock para is_image_file
+        with patch('fotix.core.selection_strategy.is_image_file', return_value=True):
+            # Mock para get_image_resolution retornando None (não consegue determinar resolução)
+            with patch('fotix.core.selection_strategy.get_image_resolution', return_value=None):
+                # Act
+                result = strategy.select_file_to_keep(duplicate_set)
+
+        # Assert
+        assert result == file2  # Deve usar a estratégia de fallback
+
+    def test_no_resolution_determined_no_fallback(self):
+        """Testa o comportamento quando não é possível determinar a resolução e não há fallback."""
+        # Arrange
+        mock_fs_service = MagicMock()
+        strategy = HighestResolutionStrategy(file_system_service=mock_fs_service)  # Sem fallback
+
+        # Criar arquivos de imagem
+        file1 = FileInfo(path=Path("image1.jpg"), size=100)
+        file2 = FileInfo(path=Path("image2.jpg"), size=100)
+
+        duplicate_set = DuplicateSet(files=[file1, file2], hash="abc123")
+
+        # Mock para is_image_file
+        with patch('fotix.core.selection_strategy.is_image_file', return_value=True):
+            # Mock para get_image_resolution retornando None (não consegue determinar resolução)
+            with patch('fotix.core.selection_strategy.get_image_resolution', return_value=None):
+                # Act
+                result = strategy.select_file_to_keep(duplicate_set)
+
+        # Assert
+        assert result == file1  # Deve retornar o primeiro arquivo quando não há fallback
 
 
 class TestShortestNameStrategy:
