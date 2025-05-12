@@ -51,3 +51,52 @@ for duplicate_set in duplicate_sets:
     for file_info in duplicate_set.files:
         print(f"  - {file_info.path}")
 ```
+
+### `duplicate_management_service.py`
+
+O módulo `duplicate_management_service.py` implementa o `DuplicateManagementService`, responsável por gerenciar a seleção do arquivo a ser mantido (usando `SelectionStrategy`), a remoção segura (usando `FileSystemService`) e o backup (usando `BackupService`).
+
+#### Funcionalidades
+
+- Seleção automática ou personalizada do arquivo a ser mantido
+- Backup dos arquivos antes da remoção
+- Remoção segura de arquivos duplicados (movendo para a lixeira)
+- Tratamento de erros durante o processo
+- Suporte para arquivos normais (arquivos dentro de ZIPs são ignorados para remoção)
+
+#### Uso Básico
+
+```python
+from pathlib import Path
+from fotix.application.services.duplicate_management_service import DuplicateManagementService
+from fotix.core.selection_strategy import create_strategy
+from fotix.infrastructure.file_system import FileSystemService
+from fotix.infrastructure.backup import BackupService
+
+# Criar instâncias dos serviços necessários
+file_system_service = FileSystemService()
+backup_service = BackupService(file_system_service)
+selection_strategy = create_strategy('highest_resolution', file_system_service)
+
+# Criar o serviço de gerenciamento de duplicatas
+duplicate_mgmt_service = DuplicateManagementService(
+    selection_strategy=selection_strategy,
+    file_system_service=file_system_service,
+    backup_service=backup_service
+)
+
+# Processar um conjunto de duplicatas
+result = duplicate_mgmt_service.process_duplicate_set(
+    duplicate_set=duplicate_set,
+    create_backup=True,
+    custom_selection=None  # Se None, usa a estratégia de seleção
+)
+
+# Verificar o resultado
+if result['error'] is None:
+    print(f"Arquivo mantido: {result['kept_file'].path}")
+    print(f"Arquivos removidos: {len(result['removed_files'])}")
+    print(f"ID do backup: {result['backup_id']}")
+else:
+    print(f"Erro: {result['error']}")
+```
