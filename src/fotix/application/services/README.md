@@ -100,3 +100,64 @@ if result['error'] is None:
 else:
     print(f"Erro: {result['error']}")
 ```
+
+### `backup_restore_service.py`
+
+O módulo `backup_restore_service.py` implementa o `BackupRestoreService`, responsável por gerenciar a listagem e restauração de backups, utilizando os serviços de backup e sistema de arquivos da infraestrutura.
+
+#### Funcionalidades
+
+- Listagem de backups disponíveis
+- Obtenção de detalhes de um backup específico
+- Restauração de backups para seus locais originais ou para um diretório específico
+- Remoção de backups
+- Tratamento de erros durante as operações
+- Suporte para relatório de progresso durante a restauração
+
+#### Uso Básico
+
+```python
+from pathlib import Path
+from fotix.application.services.backup_restore_service import BackupRestoreService
+from fotix.infrastructure.file_system import FileSystemService
+from fotix.infrastructure.backup import BackupService
+
+# Criar instâncias dos serviços necessários
+file_system_service = FileSystemService()
+backup_service = BackupService(file_system_service)
+
+# Criar o serviço de backup e restauração
+backup_restore_service = BackupRestoreService(
+    backup_service=backup_service,
+    file_system_service=file_system_service
+)
+
+# Listar backups disponíveis
+backups = backup_restore_service.list_backups()
+for backup in backups:
+    print(f"ID: {backup['id']}, Data: {backup['date']}, Arquivos: {backup['file_count']}")
+
+# Obter detalhes de um backup específico
+backup_details = backup_restore_service.get_backup_details("backup_id_123")
+print(f"Detalhes do backup: {backup_details}")
+
+# Restaurar um backup para um diretório específico
+result = backup_restore_service.restore_backup(
+    backup_id="backup_id_123",
+    target_directory=Path("C:/Restaurados"),
+    progress_callback=lambda progress: print(f"Progresso: {progress * 100:.1f}%")
+)
+
+# Verificar o resultado da restauração
+if result['status'] == "success":
+    print(f"Backup restaurado com sucesso para: {result['target_directory']}")
+else:
+    print(f"Erro: {result['message']}")
+
+# Remover um backup
+result = backup_restore_service.delete_backup("backup_id_123")
+if result['status'] == "success":
+    print(f"Backup removido com sucesso: {result['backup_info']['id']}")
+else:
+    print(f"Erro: {result['message']}")
+```
