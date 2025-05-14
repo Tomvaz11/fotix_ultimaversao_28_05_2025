@@ -1,4 +1,4 @@
-# AGV Prompt Template: ImplementadorMestre v2.4 - Implementação Autônoma Guiada com Auto-Revisão
+# AGV Prompt Template: ImplementadorMestre v2.7 - Implementação Autônoma Guiada com Auto-Revisão
 
 **Tarefa Principal:** Implementar ou modificar o componente lógico alvo especificado abaixo, utilizando o Blueprint Arquitetural como guia, **com foco estrito no escopo da tarefa atual**. Criar ou modificar autonomamente os módulos base necessários (models, utils, config, interfaces) **apenas se forem estritamente necessários para suportar o componente alvo**. Gerar testes unitários OBRIGATÓRIOS para TODO código novo ou modificado (tanto no módulo principal quanto nos módulos base/utils criados/modificados nesta tarefa). Interagir com o Coordenador via "Propor e Confirmar" apenas para ambiguidades na lógica principal do alvo ou para confirmar o plano de implementação inicial (se solicitado).
 
