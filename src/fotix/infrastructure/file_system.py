@@ -23,19 +23,19 @@ logger = get_logger(__name__)
 class FileSystemService:
     """
     Implementação da interface IFileSystemService.
-    
+
     Esta classe fornece métodos para operações comuns no sistema de arquivos,
     como leitura, escrita, movimentação para lixeira e listagem de diretórios.
     Implementa tratamento de erros robusto e logging de operações.
     """
-    
+
     def get_file_size(self, path: Path) -> Optional[int]:
         """
         Retorna o tamanho do arquivo em bytes.
-        
+
         Args:
             path: Caminho para o arquivo.
-            
+
         Returns:
             int: Tamanho do arquivo em bytes, ou None se o arquivo não existir
                  ou não for acessível.
@@ -45,7 +45,7 @@ class FileSystemService:
             if not path.is_file():
                 logger.debug(f"Caminho não é um arquivo: {path}")
                 return None
-            
+
             # Obter o tamanho do arquivo
             size = path.stat().st_size
             logger.debug(f"Tamanho do arquivo {path}: {size} bytes")
@@ -59,18 +59,18 @@ class FileSystemService:
         except Exception as e:
             logger.error(f"Erro ao obter tamanho do arquivo {path}: {str(e)}")
             return None
-    
+
     def stream_file_content(self, path: Path, chunk_size: int = 65536) -> Iterable[bytes]:
         """
         Retorna um iterador/gerador para ler o conteúdo do arquivo em blocos.
-        
+
         Args:
             path: Caminho para o arquivo.
             chunk_size: Tamanho de cada bloco em bytes. Padrão é 64KB.
-            
+
         Returns:
             Iterable[bytes]: Iterador/gerador que produz blocos do conteúdo do arquivo.
-            
+
         Raises:
             FileNotFoundError: Se o arquivo não existir.
             PermissionError: Se não houver permissão para ler o arquivo.
@@ -78,7 +78,7 @@ class FileSystemService:
             Exception: Outras exceções relacionadas a IO podem ser levantadas.
         """
         logger.debug(f"Iniciando streaming do arquivo: {path}")
-        
+
         try:
             with open(path, 'rb') as file:
                 while True:
@@ -86,7 +86,7 @@ class FileSystemService:
                     if not chunk:
                         break
                     yield chunk
-            
+
             logger.debug(f"Streaming do arquivo {path} concluído com sucesso")
         except FileNotFoundError:
             logger.error(f"Arquivo não encontrado: {path}")
@@ -100,53 +100,56 @@ class FileSystemService:
         except Exception as e:
             logger.error(f"Erro ao ler o arquivo {path}: {str(e)}")
             raise
-    
-    def list_directory_contents(self, path: Path, recursive: bool = True, 
+
+    def list_directory_contents(self, path: Path, recursive: bool = True,
                                file_extensions: Optional[List[str]] = None) -> Iterable[Path]:
         """
         Lista os conteúdos de um diretório, opcionalmente de forma recursiva.
-        
+
         Args:
             path: Caminho para o diretório.
             recursive: Se True, lista também os conteúdos dos subdiretórios.
             file_extensions: Lista opcional de extensões de arquivo para filtrar.
                             Se None, todos os arquivos são incluídos.
                             Exemplo: ['.jpg', '.png']
-            
+
         Returns:
             Iterable[Path]: Iterador/gerador que produz os caminhos dos arquivos
                            encontrados.
-            
+
         Raises:
             FileNotFoundError: Se o diretório não existir.
             NotADirectoryError: Se o caminho não apontar para um diretório.
             PermissionError: Se não houver permissão para acessar o diretório.
         """
         logger.debug(f"Listando conteúdo do diretório: {path} (recursivo={recursive})")
-        
+
         try:
             # Verificar se é um diretório
             if not path.is_dir():
                 logger.error(f"O caminho não é um diretório: {path}")
                 raise NotADirectoryError(f"O caminho não é um diretório: {path}")
-            
+
             # Função para verificar se um arquivo deve ser incluído com base na extensão
             def should_include_file(file_path: Path) -> bool:
                 if not file_extensions:
                     return True
                 return file_path.suffix.lower() in file_extensions
-            
+
             # Listar conteúdo do diretório
+            files_found = 0
             if recursive:
                 for item in path.rglob('*'):
                     if item.is_file() and should_include_file(item):
+                        files_found += 1
                         yield item
             else:
                 for item in path.iterdir():
                     if item.is_file() and should_include_file(item):
+                        files_found += 1
                         yield item
-            
-            logger.debug(f"Listagem do diretório {path} concluída com sucesso")
+
+            logger.debug(f"Listagem do diretório {path} concluída com sucesso. Encontrados {files_found} arquivos.")
         except FileNotFoundError:
             logger.error(f"Diretório não encontrado: {path}")
             raise
@@ -156,30 +159,30 @@ class FileSystemService:
         except Exception as e:
             logger.error(f"Erro ao listar o diretório {path}: {str(e)}")
             raise
-    
+
     def move_to_trash(self, path: Path) -> None:
         """
         Move um arquivo ou diretório para a lixeira do sistema.
-        
+
         Args:
             path: Caminho para o arquivo ou diretório a ser movido para a lixeira.
-            
+
         Raises:
             FileNotFoundError: Se o caminho não existir.
             PermissionError: Se não houver permissão para mover o arquivo/diretório.
             OSError: Para outros erros relacionados ao sistema operacional.
         """
         logger.info(f"Movendo para a lixeira: {path}")
-        
+
         try:
             # Verificar se o caminho existe
             if not path.exists():
                 logger.error(f"Caminho não encontrado: {path}")
                 raise FileNotFoundError(f"Caminho não encontrado: {path}")
-            
+
             # Mover para a lixeira usando send2trash
             send2trash.send2trash(str(path))
-            
+
             logger.info(f"Movido para a lixeira com sucesso: {path}")
         except FileNotFoundError:
             logger.error(f"Caminho não encontrado: {path}")
@@ -190,15 +193,15 @@ class FileSystemService:
         except Exception as e:
             logger.error(f"Erro ao mover para a lixeira {path}: {str(e)}")
             raise
-    
+
     def copy_file(self, source: Path, destination: Path) -> None:
         """
         Copia um arquivo de origem para destino.
-        
+
         Args:
             source: Caminho para o arquivo de origem.
             destination: Caminho para o arquivo de destino.
-            
+
         Raises:
             FileNotFoundError: Se o arquivo de origem não existir.
             IsADirectoryError: Se source for um diretório.
@@ -206,7 +209,7 @@ class FileSystemService:
             OSError: Para outros erros relacionados ao sistema operacional.
         """
         logger.info(f"Copiando arquivo de {source} para {destination}")
-        
+
         try:
             # Verificar se a origem é um arquivo
             if not source.is_file():
@@ -216,13 +219,13 @@ class FileSystemService:
                 else:
                     logger.error(f"A origem não é um arquivo: {source}")
                     raise IsADirectoryError(f"A origem não é um arquivo: {source}")
-            
+
             # Criar diretório de destino se não existir
             destination.parent.mkdir(parents=True, exist_ok=True)
-            
+
             # Copiar o arquivo preservando metadados
             shutil.copy2(source, destination)
-            
+
             logger.info(f"Arquivo copiado com sucesso de {source} para {destination}")
         except FileNotFoundError:
             logger.error(f"Arquivo de origem não encontrado: {source}")
@@ -233,22 +236,22 @@ class FileSystemService:
         except Exception as e:
             logger.error(f"Erro ao copiar arquivo de {source} para {destination}: {str(e)}")
             raise
-    
+
     def create_directory(self, path: Path, exist_ok: bool = True) -> None:
         """
         Cria um diretório e todos os diretórios pai necessários.
-        
+
         Args:
             path: Caminho para o diretório a ser criado.
             exist_ok: Se True, não levanta erro se o diretório já existir.
-            
+
         Raises:
             FileExistsError: Se o diretório já existir e exist_ok for False.
             PermissionError: Se não houver permissão para criar o diretório.
             FileNotFoundError: Se um diretório pai não puder ser criado.
         """
         logger.info(f"Criando diretório: {path}")
-        
+
         try:
             path.mkdir(parents=True, exist_ok=exist_ok)
             logger.info(f"Diretório criado com sucesso: {path}")
@@ -261,28 +264,28 @@ class FileSystemService:
         except Exception as e:
             logger.error(f"Erro ao criar o diretório {path}: {str(e)}")
             raise
-    
+
     def path_exists(self, path: Path) -> bool:
         """
         Verifica se um caminho existe no sistema de arquivos.
-        
+
         Args:
             path: Caminho a ser verificado.
-            
+
         Returns:
             bool: True se o caminho existir, False caso contrário.
         """
         exists = path.exists()
         logger.debug(f"Verificando existência do caminho {path}: {exists}")
         return exists
-    
+
     def get_creation_time(self, path: Path) -> Optional[float]:
         """
         Retorna o timestamp de criação do arquivo ou diretório.
-        
+
         Args:
             path: Caminho para o arquivo ou diretório.
-            
+
         Returns:
             float: Timestamp de criação (segundos desde a época), ou None se
                   o arquivo não existir ou a informação não estiver disponível.
@@ -291,7 +294,7 @@ class FileSystemService:
             if not path.exists():
                 logger.debug(f"Caminho não encontrado: {path}")
                 return None
-            
+
             # Obter o timestamp de criação
             # Em sistemas Windows, st_ctime é o timestamp de criação
             # Em sistemas Unix, st_ctime é o timestamp de alteração de metadados
@@ -302,14 +305,14 @@ class FileSystemService:
         except Exception as e:
             logger.error(f"Erro ao obter timestamp de criação para {path}: {str(e)}")
             return None
-    
+
     def get_modification_time(self, path: Path) -> Optional[float]:
         """
         Retorna o timestamp de última modificação do arquivo ou diretório.
-        
+
         Args:
             path: Caminho para o arquivo ou diretório.
-            
+
         Returns:
             float: Timestamp de modificação (segundos desde a época), ou None se
                   o arquivo não existir ou a informação não estiver disponível.
@@ -318,7 +321,7 @@ class FileSystemService:
             if not path.exists():
                 logger.debug(f"Caminho não encontrado: {path}")
                 return None
-            
+
             # Obter o timestamp de modificação
             modification_time = path.stat().st_mtime
             logger.debug(f"Timestamp de modificação para {path}: {modification_time}")
