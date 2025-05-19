@@ -9,7 +9,7 @@
 3.  **Ordem e Descrições Iniciais:** `@Output_Ordem_Para_Implementacao_Geral.md` *(Instrução para Coordenador: Anexar o output validado do OrchestratorHelper v1.4 ou superior, adaptado para o projeto atual)*
 4.  **Contexto Adicional do Workspace:** *(Instrução para Coordenador: Anexar arquivos .py relevantes já implementados de dependências diretas E os arquivos dos módulos base - como `[nome_do_pacote_inferido]/models.py`, `[nome_do_pacote_inferido]/utils/helpers.py`, etc. - se já existirem e forem relevantes para o alvo)*
 5.  **Confirmação do Plano Inicial Requerida pelo Coordenador? (Sim/Não):** `Não`
-6.  **Descrição Detalhada da Tarefa - Problema a ser Resolvido:** `No ZipHandlerService, ao usar stream_unzip para processar arquivos ZIP, apenas a primeira entrada de arquivo (após os diretórios) é processada. As entradas subsequentes são perdidas. Após a correção, o ZipHandlerService deve ser capaz de iterar e permitir o processamento de todas as entradas de arquivo contidas em um ZIP, não apenas a primeira.`
+6.  **Descrição Detalhada da Tarefa - Problema a ser Resolvido:** `No ZipHandlerService, ao usar stream_unzip para processar arquivos ZIP, apenas a primeira entrada de arquivo (após os diretórios) é processada. As entradas subsequentes são perdidas. Analisar o código e identificar a causa raiz do problema. Após a correção, o ZipHandlerService deve ser capaz de iterar e permitir o processamento de todas as entradas de arquivo contidas em um ZIP, não apenas a primeira. Se precisar realizar testes, use o arquivo C:\Users\Antonio\Desktop\ab\abcd.zip.`
 
 **Instruções Detalhadas para a IA (ImplementadorMestre):**
 
