@@ -4,11 +4,12 @@
 
 **Contexto Essencial (Fornecido pelo Coordenador):**
 
-1.  **Funcionalidade/Componente Alvo Principal:** `fotix.main`
+1.  **Funcionalidade/Componente Alvo Principal:** `A definir pelo Coordenador ou pela IA`
 2.  **Blueprint Arquitetural:** `@Output_BluePrint_Arquitetural_Tocrisna_v3.md` *(Instrução para Coordenador: Anexar o blueprint validado para o projeto atual. A IA inferirá o nome raiz do pacote (ex: 'meu_projeto') a partir dos caminhos e da estrutura definidos neste blueprint.)*
 3.  **Ordem e Descrições Iniciais:** `@Output_Ordem_Para_Implementacao_Geral.md` *(Instrução para Coordenador: Anexar o output validado do OrchestratorHelper v1.4 ou superior, adaptado para o projeto atual)*
 4.  **Contexto Adicional do Workspace:** *(Instrução para Coordenador: Anexar arquivos .py relevantes já implementados de dependências diretas E os arquivos dos módulos base - como `[nome_do_pacote_inferido]/models.py`, `[nome_do_pacote_inferido]/utils/helpers.py`, etc. - se já existirem e forem relevantes para o alvo)*
 5.  **Confirmação do Plano Inicial Requerida pelo Coordenador? (Sim/Não):** `Não`
+6.  **Descrição Detalhada da Tarefa - Problema a ser Resolvido:** `No ZipHandlerService, ao usar stream_unzip para processar arquivos ZIP, apenas a primeira entrada de arquivo (após os diretórios) é processada. As entradas subsequentes são perdidas. Após a correção, o ZipHandlerService deve ser capaz de iterar e permitir o processamento de todas as entradas de arquivo contidas em um ZIP, não apenas a primeira.`
 
 **Instruções Detalhadas para a IA (ImplementadorMestre):**
 
