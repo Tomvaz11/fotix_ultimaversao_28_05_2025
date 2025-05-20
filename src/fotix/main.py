@@ -12,6 +12,7 @@ Exemplo de uso:
 """
 
 import sys
+import logging
 
 from PySide6.QtWidgets import QApplication
 
@@ -63,9 +64,9 @@ def main() -> int:
     """
     try:
         # Configurar logging
-        log_level = get_log_level()
-        setup_logging(log_level=log_level)
-        logger.info("Iniciando aplicação Fotix")
+        # log_level = get_log_level() # Comentado para forçar DEBUG
+        setup_logging(log_level=logging.DEBUG) # Forçando nível DEBUG para diagnóstico
+        logger.info("Iniciando aplicação Fotix com LOG LEVEL FORÇADO PARA DEBUG")
 
         # Registrar informações básicas
         config = get_config()

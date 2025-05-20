@@ -74,7 +74,7 @@ class TestScanService:
         with patch.object(Path, "is_dir", return_value=True):
             # Act
             result = scan_service.scan_directories(
-                directories=directories,
+                paths_to_scan=directories,
                 include_zips=include_zips,
                 progress_callback=progress_callback
             )
@@ -177,7 +177,7 @@ class TestScanService:
         # Configurar mock para simular que os diretórios são válidos
         with patch.object(Path, "is_dir", return_value=True):
             # Act
-            result = scan_service.scan_directories(directories=directories)
+            result = scan_service.scan_directories(paths_to_scan=directories)
 
             # Assert
             assert len(result) == 1
@@ -196,7 +196,7 @@ class TestScanService:
             # Configurar mock para simular a detecção de subdiretórios
             with patch.object(Path, "relative_to", side_effect=lambda p: None if str(p) in str(child_dir) else ValueError()):
                 # Act
-                scan_service.scan_directories(directories=directories)
+                scan_service.scan_directories(paths_to_scan=directories)
 
                 # Assert
                 # Verificar se o duplicate_finder foi chamado apenas com o diretório pai

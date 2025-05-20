@@ -88,7 +88,8 @@ class MainWindow(QMainWindow):
         self._duplicate_mgmt_service = DuplicateManagementService(
             selection_strategy=self._selection_strategy,
             file_system_service=self._file_system_service,
-            backup_service=self._backup_service
+            backup_service=self._backup_service,
+            zip_handler_service=self._zip_handler_service
         )
 
         self._backup_restore_service = BackupRestoreService(
@@ -243,7 +244,7 @@ class MainWindow(QMainWindow):
 
             # Iniciar varredura
             self._duplicate_sets = self._scan_service.scan_directories(
-                directories=dir_paths,
+                paths_to_scan=dir_paths,
                 include_zips=True,
                 progress_callback=progress_callback
             )
@@ -383,23 +384,43 @@ class MainWindow(QMainWindow):
             # Verificar resultado
             if result['error'] is None:
                 # Atualizar widget de lista de duplicatas
-                self._duplicate_sets.remove(duplicate_set)
+                if duplicate_set in self._duplicate_sets:
+                    self._duplicate_sets.remove(duplicate_set)
                 self._duplicate_list_widget.set_duplicate_sets(self._duplicate_sets)
 
                 # Exibir mensagem de sucesso
-                QMessageBox.information(
-                    self,
-                    "Processamento Concluído",
-                    f"Arquivo mantido: {result['kept_file'].path.name}\n"
-                    f"Arquivos removidos: {len(result['removed_files'])}\n"
-                    f"ID do backup: {result['backup_id']}"
-                )
+                title = "Processamento Concluído"
+                message_details = ""
+                status_message_details = ""
 
-                # Atualizar barra de status
-                self._status_bar.showMessage(
-                    f"Processamento concluído. Mantido: {result['kept_file'].path.name}, "
-                    f"Removidos: {len(result['removed_files'])} arquivos."
-                )
+                if result.get('processed_as_extracted_folder'):
+                    kept_file_name = result['kept_file'].path.name if result.get('kept_file') else "N/A"
+                    output_folder = result.get('output_folder_path', "N/A")
+                    num_removed_in_zip = len(result.get('removed_files', []))
+                    
+                    message_details = (
+                        f"Processamento de duplicatas dentro de um arquivo ZIP concluído.\n"
+                        f"Arquivo original do ZIP: {result.get('kept_file').zip_path.name if result.get('kept_file') else 'N/A'}\n"
+                        f"Arquivo mantido (dentro do ZIP): {kept_file_name}\n"
+                        f"{num_removed_in_zip} outro(s) arquivo(s) duplicado(s) deste ZIP não foram incluídos na nova pasta.\n"
+                        f"Conteúdo filtrado salvo em: {output_folder}\n"
+                        f"O arquivo ZIP original não foi modificado."
+                    )
+                    status_message_details = f"Conteúdo filtrado de ZIP salvo em {Path(output_folder).name}. Mantido (no ZIP): {kept_file_name}."
+                else:
+                    kept_file_name = result['kept_file'].path.name if result.get('kept_file') else "N/A"
+                    num_removed = len(result.get('removed_files', []))
+                    backup_id_val = result.get('backup_id', "N/A")
+                    message_details = (
+                        f"Arquivo mantido: {kept_file_name}\n"
+                        f"Arquivos removidos: {num_removed}\n"
+                        f"ID do backup: {backup_id_val}"
+                    )
+                    status_message_details = f"Mantido: {kept_file_name}, Removidos: {num_removed} arquivos."
+                
+                QMessageBox.information(self, title, message_details)
+                self._status_bar.showMessage(f"Processamento concluído. {status_message_details}")
+
             else:
                 # Exibir mensagem de erro
                 QMessageBox.critical(

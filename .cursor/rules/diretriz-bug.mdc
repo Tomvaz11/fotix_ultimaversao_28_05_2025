@@ -1,5 +1,31 @@
 ---
-description:
-globs:
-alwaysApply: false
+description: 
+globs: 
+alwaysApply: true
 ---
+# Regras AGV para o Projeto Fotix v1.0
+
+## I. Fundamentos do Método AGV e Qualidade de Código:
+1.  **Qualidade Intrínseca Sempre:** Priorize código claro, legível, manutenível, robusto e bem testado. Aderência a SOLID, DRY, KISS.
+2.  **Arquitetura e Interfaces:** Respeite estritamente a arquitetura definida no Blueprint (`@Output_BluePrint_Arquitetural_Tocrisna_v3.md`). Implemente e utilize interfaces explícitas conforme especificado.
+3.  **Stack Tecnológica Designada:** Utilize **EXCLUSIVAMENTE** as bibliotecas e tecnologias definidas para cada componente no Blueprint (`@Output_BluePrint_Arquitetural_Tocrisna_v3.md`). Em caso de dificuldade com a tecnologia designada, consulte primeiro qualquer documentação/exemplos fornecidos no contexto do projeto. Se insuficiente, PARE e SOLICITE ao Coordenador. É PROIBIDO usar alternativas não designadas como fallback.
+
+## II. Padrões de Codificação Essenciais:
+4.  **PEP 8:** Siga rigorosamente o PEP 8 para formatação.
+5.  **Type Hints (PEP 484):** Use type hints completos para todas as assinaturas de funções/métodos e variáveis importantes.
+6.  **Docstrings (PEP 257):** Escreva docstrings claras (estilo Google ou NumPy) para todos os módulos, classes, funções e métodos públicos ou complexos.
+7.  **Modelos de Dados:** Use Pydantic `BaseModel` para modelos de dados, conforme definido no Blueprint (`@Output_BluePrint_Arquitetural_Tocrisna_v3.md`).
+8.  **Manipulação de Caminhos:** Use `pathlib.Path` para todas as operações com caminhos de arquivo.
+
+## III. Diretrizes de Teste Mandatórias (Especialmente para Correções/Modificações):
+9.  **Testes Unitários (`pytest`):** TODO código novo ou modificado DEVE ser acompanhado de testes unitários `pytest` que cubram a lógica alterada/adicionada.
+10. **Cobertura de Testes:** A meta para código novo/modificado é de alta cobertura (idealmente >95-100% das linhas alteradas/adicionadas).
+11. **Isolamento dos Testes:** Testes unitários devem mockar todas as dependências externas (I/O, outros serviços não diretamente sob teste na unidade).
+12. **Estrutura de Testes:** Mantenha a estrutura espelhada: testes para `src/fotix/modulo/arquivo.py` devem estar em `tests/unit/fotix/modulo/test_arquivo.py`.
+
+## IV. Interação com o Coordenador:
+
+13. **Ambiguidade ou Dúvida:** Se um requisito não estiver claro, se houver conflito com o Blueprint, ou se uma decisão de design significativa for necessária, solicite esclarecimentos ao Coordenador. Não faça suposições que impactem a arquitetura ou a funcionalidade principal.
+
+
+14. **ESCREVA SEMPRE EM ESPANHOL**

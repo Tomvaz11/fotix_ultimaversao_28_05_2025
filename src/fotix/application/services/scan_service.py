@@ -57,17 +57,18 @@ class ScanService:
     @measure_time
     def scan_directories(
         self,
-        directories: List[Path],
+        paths_to_scan: List[Path],
         include_zips: bool = True,
         file_extensions: Optional[List[str]] = None,
         progress_callback: Optional[Callable[[float], None]] = None
     ) -> List[DuplicateSet]:
         """
-        Varre os diretórios especificados em busca de arquivos duplicados.
+        Varre os caminhos especificados (diretórios e/ou arquivos ZIP) em busca de arquivos duplicados.
         
         Args:
-            directories: Lista de diretórios a serem analisados.
-            include_zips: Se True, também analisa o conteúdo de arquivos ZIP encontrados.
+            paths_to_scan: Lista de caminhos (diretórios ou arquivos ZIP individuais) a serem analisados.
+            include_zips: Se True, também analisa o conteúdo de arquivos ZIP encontrados (sejam eles
+                          arquivos ZIP individuais na lista paths_to_scan ou dentro dos diretórios).
             file_extensions: Lista opcional de extensões de arquivo para filtrar.
                            Se None, todos os arquivos são incluídos.
             progress_callback: Função opcional para reportar o progresso (0.0 a 1.0).
@@ -76,21 +77,64 @@ class ScanService:
             List[DuplicateSet]: Lista de conjuntos de arquivos duplicados encontrados.
         
         Raises:
-            ValueError: Se algum dos diretórios não existir ou não for um diretório.
+            ValueError: Se algum dos caminhos que deveriam ser diretórios não existir ou não for um diretório,
+                        ou se um arquivo que não é ZIP for passado diretamente.
         """
-        logger.info(f"Iniciando varredura de {len(directories)} diretórios (include_zips={include_zips})")
+        logger.info(f"Iniciando varredura de {len(paths_to_scan)} caminhos (include_zips={include_zips})")
+        logger.debug(f"[ScanService] Caminhos recebidos para scan: {paths_to_scan}")
         
-        # Validar diretórios
-        self._validate_directories(directories)
+        actual_directories: List[Path] = []
+        individual_zip_files: List[Path] = []
+        invalid_paths: List[str] = []
+
+        for path in paths_to_scan:
+            if not self.file_system_service.path_exists(path):
+                invalid_paths.append(f"'{path}' não existe")
+                continue
+
+            if path.is_dir():
+                actual_directories.append(path)
+                logger.debug(f"[ScanService] Caminho classificado como DIRETÓRIO: {path}")
+            elif path.is_file():
+                logger.debug(f"[ScanService] Caminho classificado como ARQUIVO: {path}, Sufixo: {path.suffix.lower()}")
+                if include_zips and path.suffix.lower() == '.zip':
+                    individual_zip_files.append(path)
+                    logger.debug(f"[ScanService] Arquivo classificado como ZIP INDIVIDUAL: {path}")
+                else:
+                    # É um arquivo, mas não é ZIP ou include_zips é False
+                    invalid_paths.append(f"'{path}' é um arquivo mas não é um ZIP processável ou include_zips é falso.")
+                    logger.warning(f"[ScanService] Arquivo IGNORADO (não é ZIP ou include_zips=False): {path}")
+            else:
+                # Nem diretório, nem arquivo (ex: link simbólico quebrado, etc.)
+                invalid_paths.append(f"'{path}' não é um diretório nem um arquivo válido.")
+                logger.warning(f"[ScanService] Caminho INVÁLIDO (nem dir, nem arq): {path}")
+
+        if invalid_paths:
+            error_msg = f"Caminhos inválidos fornecidos: {', '.join(invalid_paths)}"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+            
+        # Validar e filtrar apenas os diretórios reais
+        # O método _validate_and_filter_directories será criado a seguir
+        # Ele combinará _validate_directories e _filter_nested_directories
+        # e só deve operar em caminhos que são confirmadamente diretórios.
         
-        # Filtrar diretórios para remover subdiretórios já incluídos
-        filtered_directories = self._filter_nested_directories(directories)
-        if len(filtered_directories) < len(directories):
-            logger.info(f"Removidos {len(directories) - len(filtered_directories)} diretórios aninhados")
+        # Validar e filtrar os diretórios reais
+        validated_and_filtered_directories = self._validate_and_filter_directories(actual_directories)
         
-        # Preparar caminhos para varredura
-        scan_paths = self._prepare_scan_paths(filtered_directories, file_extensions)
+        # Preparar caminhos para varredura (combina diretórios validados e arquivos ZIP individuais)
+        # O método _prepare_scan_paths será modificado para aceitar ambos
+        scan_paths = self._prepare_scan_paths(
+            valid_directories=validated_and_filtered_directories, 
+            zip_files=individual_zip_files,
+            file_extensions=file_extensions # file_extensions não é usado por _prepare_scan_paths atualmente
+        )
+        logger.debug(f"[ScanService] Caminhos preparados para DuplicateFinderService: {scan_paths}")
         
+        if not scan_paths:
+            logger.info("Nenhum caminho válido para varredura após filtragem e validação.")
+            return []
+
         # Delegar a detecção de duplicatas para o serviço especializado
         duplicate_sets = self.duplicate_finder_service.find_duplicates(
             scan_paths=scan_paths,
@@ -101,73 +145,91 @@ class ScanService:
         logger.info(f"Varredura concluída. Encontrados {len(duplicate_sets)} conjuntos de duplicatas")
         return duplicate_sets
     
-    def _validate_directories(self, directories: List[Path]) -> None:
+    def _validate_and_filter_directories(self, directories_to_check: List[Path]) -> List[Path]:
         """
-        Valida se os diretórios especificados existem e são realmente diretórios.
+        Valida se os caminhos fornecidos são diretórios existentes e os filtra para remover aninhamentos.
         
         Args:
-            directories: Lista de diretórios a serem validados.
-            
-        Raises:
-            ValueError: Se algum dos diretórios não existir ou não for um diretório.
-        """
-        invalid_dirs = []
-        
-        for directory in directories:
-            if not self.file_system_service.path_exists(directory):
-                invalid_dirs.append(f"'{directory}' não existe")
-            elif not directory.is_dir():
-                invalid_dirs.append(f"'{directory}' não é um diretório")
-        
-        if invalid_dirs:
-            error_msg = f"Diretórios inválidos: {', '.join(invalid_dirs)}"
-            logger.error(error_msg)
-            raise ValueError(error_msg)
-    
-    def _filter_nested_directories(self, directories: List[Path]) -> List[Path]:
-        """
-        Filtra diretórios para remover subdiretórios já incluídos em outros diretórios da lista.
-        
-        Args:
-            directories: Lista de diretórios a serem filtrados.
+            directories_to_check: Lista de caminhos que se espera serem diretórios.
             
         Returns:
-            List[Path]: Lista de diretórios filtrada, sem subdiretórios redundantes.
+            List[Path]: Lista de diretórios validados e filtrados.
+            
+        Raises:
+            ValueError: Se algum dos caminhos não existir ou não for um diretório.
         """
+        if not directories_to_check:
+            return []
+
+        validated_dirs = []
+        invalid_paths_messages = []
+        for directory in directories_to_check:
+            # A verificação de existência já foi feita em scan_directories, 
+            # mas é bom manter aqui por segurança se o método for chamado de outro lugar.
+            if not self.file_system_service.path_exists(directory):
+                invalid_paths_messages.append(f"\'{directory}\' não existe")
+            elif not directory.is_dir():
+                invalid_paths_messages.append(f"\'{directory}\' não é um diretório")
+            else:
+                validated_dirs.append(directory)
+        
+        if invalid_paths_messages:
+            error_msg = f"Diretórios inválidos fornecidos para validação interna: {', '.join(invalid_paths_messages)}"
+            logger.error(error_msg)
+            # Esta exceção idealmente não deveria ser alcançada se a lógica em scan_directories estiver correta.
+            raise ValueError(error_msg)
+
+        # Filtrar diretórios para remover subdiretórios já incluídos (lógica do antigo _filter_nested_directories)
+        if not validated_dirs:
+            return []
+
         # Ordenar diretórios por comprimento do caminho (do mais curto para o mais longo)
-        sorted_dirs = sorted(directories, key=lambda p: len(str(p)))
+        sorted_dirs = sorted(validated_dirs, key=lambda p: len(str(p)))
         filtered_dirs = []
         
         for current_dir in sorted_dirs:
-            # Verificar se o diretório atual é subdiretório de algum já incluído
             is_subdirectory = False
             for parent_dir in filtered_dirs:
                 try:
-                    # Verificar se current_dir é subdiretório de parent_dir
                     current_dir.relative_to(parent_dir)
                     is_subdirectory = True
                     logger.debug(f"Diretório '{current_dir}' é subdiretório de '{parent_dir}', ignorando")
                     break
                 except ValueError:
-                    # Não é subdiretório, continuar verificação
-                    pass
+                    pass  # Não é subdiretório
             
             if not is_subdirectory:
                 filtered_dirs.append(current_dir)
         
+        if len(filtered_dirs) < len(validated_dirs):
+            logger.info(f"Removidos {len(validated_dirs) - len(filtered_dirs)} diretórios aninhados durante a validação e filtragem.")
+            
         return filtered_dirs
     
-    def _prepare_scan_paths(self, directories: List[Path], file_extensions: Optional[List[str]] = None) -> List[Path]:
+    def _prepare_scan_paths(
+        self, 
+        valid_directories: List[Path], 
+        zip_files: List[Path],
+        file_extensions: Optional[List[str]] = None # Mantido para consistência, mas não usado aqui
+    ) -> List[Path]:
         """
-        Prepara os caminhos para varredura, expandindo diretórios conforme necessário.
+        Prepara os caminhos para varredura, combinando diretórios validados e arquivos ZIP individuais.
         
         Args:
-            directories: Lista de diretórios a serem preparados.
-            file_extensions: Lista opcional de extensões de arquivo para filtrar.
+            valid_directories: Lista de diretórios validados e filtrados.
+            zip_files: Lista de arquivos ZIP individuais a serem incluídos diretamente.
+            file_extensions: Lista opcional de extensões de arquivo para filtrar (não usado atualmente aqui).
             
         Returns:
-            List[Path]: Lista de caminhos para varredura.
+            List[Path]: Lista combinada de caminhos para varredura.
         """
-        # Por enquanto, apenas retorna os diretórios como estão
-        # Em versões futuras, pode implementar lógica adicional de preparação
-        return directories
+        # Combina os diretórios válidos com os arquivos ZIP individuais
+        scan_paths = list(valid_directories)  # Cria uma cópia para não modificar a original se for a mesma referência
+        scan_paths.extend(zip_files)
+        
+        if not scan_paths:
+            logger.info("Nenhum caminho preparado para varredura.")
+        else:
+            logger.debug(f"Caminhos preparados para varredura: {scan_paths}")
+            
+        return scan_paths
